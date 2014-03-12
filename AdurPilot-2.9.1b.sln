@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdurPilot-2.9.1b", "AdurPilot-2.9.1b.vcproj", "{9014167E-16DC-44F0-A3AE-F990CE8789C7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpenTx", "..\Turnigy9x\opentx\OpenTx.vcproj", "{99B9199F-FC40-4CBD-8A62-8089E17F4DC9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9014167E-16DC-44F0-A3AE-F990CE8789C7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9014167E-16DC-44F0-A3AE-F990CE8789C7}.Debug|Win32.Build.0 = Debug|Win32
+		{9014167E-16DC-44F0-A3AE-F990CE8789C7}.Release|Win32.ActiveCfg = Release|Win32
+		{9014167E-16DC-44F0-A3AE-F990CE8789C7}.Release|Win32.Build.0 = Release|Win32
+		{99B9199F-FC40-4CBD-8A62-8089E17F4DC9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{99B9199F-FC40-4CBD-8A62-8089E17F4DC9}.Debug|Win32.Build.0 = Debug|Win32
+		{99B9199F-FC40-4CBD-8A62-8089E17F4DC9}.Release|Win32.ActiveCfg = Release|Win32
+		{99B9199F-FC40-4CBD-8A62-8089E17F4DC9}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
