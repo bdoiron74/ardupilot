@@ -177,6 +177,8 @@
 #define CH6_AHRS_YAW_KP     30          // ahrs's compass effect on yaw angle (0 = very low, 1 = very high)
 #define CH6_AHRS_KP         31          // accelerometer effect on roll/pitch angle (0=low)
 #define CH6_INAV_TC         32          // inertial navigation baro/accel and gps/accel time constant (1.5 = strong baro/gps correction on accel estimatehas very strong does not correct accel estimate, 7 = very weak correction)
+#define CH6_ACRO_BAL        40          // Acro balance tuning 0-3000 = 0-300 = 0-300%
+#define CH6_YAW_KD          41          
 
 // nav byte mask used with wp_verify_byte variable
 // -----------------------------------------------

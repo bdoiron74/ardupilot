@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-10"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -606,8 +606,9 @@ static int16_t desired_climb_rate;          // pilot desired climb rate - for lo
 // ACRO Mode
 ////////////////////////////////////////////////////////////////////////////////
 // Used to control Axis lock
-int32_t roll_axis;
-int32_t pitch_axis;
+float roll_axis;
+float pitch_axis;
+float yaw_axis;
 
 // Filters
 AP_LeadFilter xLeadFilter;      // Long GPS lag filter
@@ -929,7 +930,7 @@ AP_Limit_Altitude       altitude_limit(&current_loc);
 ////////////////////////////////////////////////////////////////////////////////
 // function definitions to keep compiler from complaining about undeclared functions
 ////////////////////////////////////////////////////////////////////////////////
-void get_throttle_althold(int32_t target_alt, int16_t min_climb_rate, int16_t max_climb_rate);
+void get_throttle_althold(int32_t target_alt, int16_t target_climb_rate, int16_t min_climb_rate, int16_t max_climb_rate);
 
 ////////////////////////////////////////////////////////////////////////////////
 // Top-level logic
@@ -1516,7 +1517,7 @@ void update_yaw_mode(void)
         if(g.axis_enabled) {
             get_yaw_rate_stabilized_ef(g.rc_4.control_in);
         }else{
-            get_acro_yaw(g.rc_4.control_in);
+            get_yaw_rate_stabilized_bf(g.rc_4.control_in);
         }
         break;
 
@@ -1635,8 +1636,8 @@ void update_roll_pitch_mode(void)
                 g.rc_1.servo_out = g.rc_1.control_in;
                 g.rc_2.servo_out = g.rc_2.control_in;
             } else {
-                get_acro_roll(g.rc_1.control_in);
-                get_acro_pitch(g.rc_2.control_in);
+              get_roll_rate_stabilized_bf(g.rc_1.control_in);
+              get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
             }
 		}
 #else  // !HELI_FRAME
@@ -1645,8 +1646,8 @@ void update_roll_pitch_mode(void)
             get_pitch_rate_stabilized_ef(g.rc_2.control_in);
         }else{
             // ACRO does not get SIMPLE mode ability
-            get_acro_roll(g.rc_1.control_in);
-            get_acro_pitch(g.rc_2.control_in);
+            get_roll_rate_stabilized_bf(g.rc_1.control_in);
+            get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
 		}
 #endif  // HELI_FRAME
         break;
@@ -1800,7 +1801,7 @@ bool set_throttle_mode( uint8_t new_throttle_mode )
             set_new_altitude(current_loc.alt);          // by default hold the current altitude
             if ( throttle_mode <= THROTTLE_MANUAL_TILT_COMPENSATED ) {      // reset the alt hold I terms if previous throttle mode was manual
                 reset_throttle_I();
-                set_accel_throttle_I_from_pilot_throttle(get_pilot_desired_throttle(g.rc_3.control_in));
+                set_accel_throttle_I_from_pilot_throttle(get_pilot_desired_throttle());
             }
             throttle_initialised = true;
             break;
@@ -1868,15 +1869,15 @@ void update_throttle_mode(void)
             set_throttle_out(0, false);
         }else{
             // send pilot's output directly to motors
-            pilot_throttle_scaled = get_pilot_desired_throttle(g.rc_3.control_in);
+            pilot_throttle_scaled = get_pilot_desired_throttle();
             set_throttle_out(pilot_throttle_scaled, false);
 
             // update estimate of throttle cruise
-			#if FRAME_CONFIG == HELI_FRAME
-            update_throttle_cruise(motors.coll_out);
-			#else
-			update_throttle_cruise(pilot_throttle_scaled);
-			#endif  //HELI_FRAME
+            #if FRAME_CONFIG == HELI_FRAME
+               update_throttle_cruise(motors.coll_out);
+            #else
+               update_throttle_cruise(pilot_throttle_scaled);
+            #endif  //HELI_FRAME
 			
 
             // check if we've taken off yet
@@ -1894,15 +1895,15 @@ void update_throttle_mode(void)
         if (g.rc_3.control_in <= 0) {
             set_throttle_out(0, false); // no need for angle boost with zero throttle
         }else{
-            pilot_throttle_scaled = get_pilot_desired_throttle(g.rc_3.control_in);
+            pilot_throttle_scaled = get_pilot_desired_throttle();
             set_throttle_out(pilot_throttle_scaled, true);
 
             // update estimate of throttle cruise
             #if FRAME_CONFIG == HELI_FRAME
-            update_throttle_cruise(motors.coll_out);
-			#else
-			update_throttle_cruise(pilot_throttle_scaled);
-			#endif  //HELI_FRAME
+               update_throttle_cruise(motors.coll_out);
+            #else
+               update_throttle_cruise(pilot_throttle_scaled);
+            #endif  //HELI_FRAME
 
             if (!ap.takeoff_complete && motors.armed()) {
                 if (pilot_throttle_scaled > g.throttle_cruise) {
@@ -1930,7 +1931,7 @@ void update_throttle_mode(void)
             set_throttle_out(0, false);
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
         }else{
-            pilot_climb_rate = get_pilot_desired_climb_rate(g.rc_3.control_in);
+            pilot_climb_rate = get_pilot_desired_climb_rate();
             get_throttle_rate(pilot_climb_rate);
         }
         break;
@@ -1942,7 +1943,7 @@ void update_throttle_mode(void)
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
             altitude_error = 0;             // clear altitude error reported to GCS - normally underlying alt hold controller updates altitude error reported to GCS
         }else{
-            pilot_climb_rate = get_pilot_desired_climb_rate(g.rc_3.control_in);
+            pilot_climb_rate = get_pilot_desired_climb_rate();
             get_throttle_rate_stabilized(pilot_climb_rate);
         }
         break;
@@ -1961,7 +1962,7 @@ void update_throttle_mode(void)
 
     case THROTTLE_HOLD:
         // alt hold plus pilot input of climb rate
-        pilot_climb_rate = get_pilot_desired_climb_rate(g.rc_3.control_in);
+        pilot_climb_rate = get_pilot_desired_climb_rate();
         if( sonar_alt_health >= SONAR_ALT_HEALTH_MAX ) {
             // if sonar is ok, use surface tracking
             get_throttle_surface_tracking(pilot_climb_rate);
@@ -2147,13 +2148,13 @@ static void tuning(){
         break;
 
     case CH6_STABILIZE_KP:
-        g.pi_stabilize_roll.kP(tuning_value);
-        g.pi_stabilize_pitch.kP(tuning_value);
+        g.pid_stabilize_roll.kP(tuning_value);
+        g.pid_stabilize_pitch.kP(tuning_value);
         break;
 
     case CH6_STABILIZE_KI:
-        g.pi_stabilize_roll.kI(tuning_value);
-        g.pi_stabilize_pitch.kI(tuning_value);
+        g.pid_stabilize_roll.kI(tuning_value);
+        g.pid_stabilize_pitch.kI(tuning_value);
         break;
 
     case CH6_ACRO_KP:
@@ -2171,11 +2172,11 @@ static void tuning(){
         break;
 
     case CH6_YAW_KP:
-        g.pi_stabilize_yaw.kP(tuning_value);
+        g.pid_stabilize_yaw.kP(tuning_value);
         break;
 
     case CH6_YAW_KI:
-        g.pi_stabilize_yaw.kI(tuning_value);
+        g.pid_stabilize_yaw.kI(tuning_value);
         break;
 
     case CH6_YAW_RATE_KP:
@@ -2301,6 +2302,21 @@ static void tuning(){
     case CH6_THR_ACCEL_KD:
         g.pid_throttle_accel.kD(tuning_value);
         break;
+
+    case CH6_ACRO_BAL:
+      g.acro_balance_roll.set(tuning_value*100);
+      g.acro_balance_pitch.set(tuning_value*100);
+      break;
+
+    case CH6_STABILIZE_KD:
+        g.pid_stabilize_roll.kD(tuning_value);
+        g.pid_stabilize_pitch.kD(tuning_value);
+        break;
+
+    case CH6_YAW_KD:
+        g.pid_stabilize_yaw.kD(tuning_value);
+        break;
+
     }
 }
 

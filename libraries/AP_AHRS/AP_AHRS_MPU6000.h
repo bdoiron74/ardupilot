@@ -102,6 +102,7 @@ private:
     float _error_yaw_last;
 
     bool _secondary_ahrs;
+
 };
 
 #endif // AP_AHRS_MPU6000_H

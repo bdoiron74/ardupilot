@@ -90,6 +90,9 @@ public:
     int16_t                                         pwm_to_range();
     int16_t                                         range_to_pwm();
 
+    void                                            calc_trim_range(); // called by set_range
+    int16_t                                         trim_range; // the control value at mid stick (added for pilot throttle curve)
+
     static void                                     set_apm_rc(APM_RC_Class * apm_rc);
     void                                            output();
     void                                            input();

@@ -17,7 +17,7 @@ public:
     // The increment will prevent old parameters from being used incorrectly
     // by newer code.
     //
-    static const uint16_t        k_format_version = 120;
+    static const uint16_t        k_format_version = 121;
 
     // The parameter software_type is set up solely for ground station use
     // and identifies the software type (eg ArduPilotMega versus
@@ -218,9 +218,9 @@ public:
         k_param_pid_rate_roll,
         k_param_pid_rate_pitch,
         k_param_pid_rate_yaw,
-        k_param_pi_stabilize_roll,
-        k_param_pi_stabilize_pitch,
-        k_param_pi_stabilize_yaw,
+        k_param_pid_stabilize_roll,
+        k_param_pid_stabilize_pitch,
+        k_param_pid_stabilize_yaw,
         k_param_pi_loiter_lat,
         k_param_pi_loiter_lon,
         k_param_pid_loiter_rate_lat,
@@ -375,9 +375,9 @@ public:
 
     APM_PI                  pi_loiter_lat;
     APM_PI                  pi_loiter_lon;
-    APM_PI                  pi_stabilize_roll;
-    APM_PI                  pi_stabilize_pitch;
-    APM_PI                  pi_stabilize_yaw;
+    AC_PID                  pid_stabilize_roll;
+    AC_PID                  pid_stabilize_pitch;
+    AC_PID                  pid_stabilize_yaw;
     APM_PI                  pi_alt_hold;
 
     // Note: keep initializers here in the same order as they are declared
@@ -428,9 +428,9 @@ public:
         pi_loiter_lat           (LOITER_P,              LOITER_I,               LOITER_IMAX * 100),
         pi_loiter_lon           (LOITER_P,              LOITER_I,               LOITER_IMAX * 100),
 
-        pi_stabilize_roll       (STABILIZE_ROLL_P,      STABILIZE_ROLL_I,       STABILIZE_ROLL_IMAX * 100),
-        pi_stabilize_pitch      (STABILIZE_PITCH_P,     STABILIZE_PITCH_I,      STABILIZE_PITCH_IMAX * 100),
-        pi_stabilize_yaw        (STABILIZE_YAW_P,       STABILIZE_YAW_I,        STABILIZE_YAW_IMAX * 100),
+        pid_stabilize_roll       (STABILIZE_ROLL_P,      STABILIZE_ROLL_I,       STABILIZE_ROLL_D, STABILIZE_ROLL_IMAX * 100),
+        pid_stabilize_pitch      (STABILIZE_PITCH_P,     STABILIZE_PITCH_I,      STABILIZE_PITCH_D, STABILIZE_PITCH_IMAX * 100),
+        pid_stabilize_yaw        (STABILIZE_YAW_P,       STABILIZE_YAW_I,        STABILIZE_YAW_D, STABILIZE_YAW_IMAX * 100),
 
         pi_alt_hold             (ALT_HOLD_P,            ALT_HOLD_I,             ALT_HOLD_IMAX)
     {

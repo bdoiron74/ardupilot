@@ -77,6 +77,21 @@ RC_Channel::set_range(int16_t low, int16_t high)
     _low            = low;
     _high_out       = high;
     _low_out        = low;
+    
+    calc_trim_range();
+    
+}
+
+void RC_Channel::calc_trim_range(void)
+{
+  if (_reverse==-1)
+  {
+    trim_range = _low + ((long)(_high-_low) * (radio_max - radio_trim - _dead_zone))/(radio_max-radio_min-_dead_zone);
+  }
+  else
+  {
+    trim_range = _low + ((long)(_high-_low) * (radio_trim - radio_min - _dead_zone))/(radio_max-radio_min-_dead_zone);
+  }
 }
 
 void

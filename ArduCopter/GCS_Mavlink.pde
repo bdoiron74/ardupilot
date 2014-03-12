@@ -109,6 +109,22 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
 
 static NOINLINE void send_attitude(mavlink_channel_t chan)
 {
+#if 1
+  if(control_mode == ACRO) // for testing - send acro attitude targets instead or absolute angles
+  {
+    mavlink_msg_attitude_send(
+        chan,
+        millis(),
+        roll_axis * RADX100, // DEGX100 -> rad
+        pitch_axis * RADX100,
+        yaw_axis * RADX100,
+        omega.x,
+        omega.y,
+        omega.z);
+  }
+  else 
+#endif
+  {
     mavlink_msg_attitude_send(
         chan,
         millis(),
@@ -118,6 +134,7 @@ static NOINLINE void send_attitude(mavlink_channel_t chan)
         omega.x,
         omega.y,
         omega.z);
+  }
 }
 
 #if AP_LIMITS == ENABLED

@@ -29,7 +29,7 @@ static void init_rc_in()
 #else
     g.rc_3.set_range(g.throttle_min, g.throttle_max);
 #endif
-    g.rc_4.set_angle(4500);
+    g.rc_4.set_angle(MAX_INPUT_YAW_ANGLE);
 
     // reverse: CW = left
     // normal:  CW = left???

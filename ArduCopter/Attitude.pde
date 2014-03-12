@@ -10,14 +10,14 @@ get_stabilize_roll(int32_t target_angle)
     target_angle            = constrain(target_angle, -4500, 4500);
 
         // convert to desired Rate:
-    int32_t target_rate = g.pi_stabilize_roll.get_p(target_angle);
+    int32_t target_rate = g.pid_stabilize_roll.get_p(target_angle);
 
     int16_t i_stab;
     if(labs(ahrs.roll_sensor) < 500) {
         target_angle            = constrain(target_angle, -500, 500);
-        i_stab                          = g.pi_stabilize_roll.get_i(target_angle, G_Dt);
+        i_stab                          = g.pid_stabilize_roll.get_i(target_angle, G_Dt);
     }else{
-        i_stab                          = g.pi_stabilize_roll.get_integrator();
+        i_stab                          = g.pid_stabilize_roll.get_integrator();
     }
 
     // set targets for rate controller
@@ -34,14 +34,14 @@ get_stabilize_pitch(int32_t target_angle)
     target_angle            = constrain(target_angle, -4500, 4500);
 
     // convert to desired Rate:
-    int32_t target_rate = g.pi_stabilize_pitch.get_p(target_angle);
+    int32_t target_rate = g.pid_stabilize_pitch.get_p(target_angle);
 
     int16_t i_stab;
     if(labs(ahrs.pitch_sensor) < 500) {
         target_angle            = constrain(target_angle, -500, 500);
-        i_stab                          = g.pi_stabilize_pitch.get_i(target_angle, G_Dt);
+        i_stab                          = g.pid_stabilize_pitch.get_i(target_angle, G_Dt);
     }else{
-        i_stab                          = g.pi_stabilize_pitch.get_integrator();
+        i_stab                          = g.pid_stabilize_pitch.get_integrator();
     }
 
     // set targets for rate controller
@@ -63,8 +63,15 @@ get_stabilize_yaw(int32_t target_angle)
     angle_error             = constrain(angle_error, -4500, 4500);
 
     // convert angle error to desired Rate:
-    target_rate = g.pi_stabilize_yaw.get_p(angle_error);
-    i_term = g.pi_stabilize_yaw.get_i(angle_error, G_Dt);
+    target_rate = g.pid_stabilize_yaw.get_p(angle_error);
+
+//    i_term = g.pid_stabilize_yaw.get_i(angle_error, G_Dt);
+    if(labs(angle_error) < 1000) {
+        i_term                          = g.pid_stabilize_yaw.get_i(angle_error, G_Dt);
+    }else{
+        i_term                          = g.pid_stabilize_yaw.get_integrator();
+    }
+
 
     // do not use rate controllers for helicotpers with external gyros
 #if FRAME_CONFIG == HELI_FRAME
@@ -86,24 +93,6 @@ get_stabilize_yaw(int32_t target_angle)
 
     // set targets for rate controller
     set_yaw_rate_target(target_rate+i_term, EARTH_FRAME);
-}
-
-static void
-get_acro_roll(int32_t target_rate)
-{
-    target_rate = target_rate * g.acro_p;
-
-    // set targets for rate controller
-    set_roll_rate_target(target_rate, BODY_FRAME);
-}
-
-static void
-get_acro_pitch(int32_t target_rate)
-{
-    target_rate = target_rate * g.acro_p;
-
-    // set targets for rate controller
-    set_pitch_rate_target(target_rate, BODY_FRAME);
 }
 
 static void
@@ -148,7 +137,7 @@ get_roll_rate_stabilized_ef(int32_t stick_angle)
     // set earth frame targets for rate controller
 
     // set earth frame targets for rate controller
-	set_roll_rate_target(g.pi_stabilize_roll.get_p(angle_error) + target_rate, EARTH_FRAME);
+	set_roll_rate_target(g.pid_stabilize_roll.get_p(angle_error) + target_rate, EARTH_FRAME);
 }
 
 // Pitch with rate input and stabilized in the earth frame
@@ -182,25 +171,24 @@ get_pitch_rate_stabilized_ef(int32_t stick_angle)
     pitch_axis = wrap_180(angle_error + ahrs.pitch_sensor);
 
     // set earth frame targets for rate controller
-	set_pitch_rate_target(g.pi_stabilize_pitch.get_p(angle_error) + target_rate, EARTH_FRAME);
+	  set_pitch_rate_target(g.pid_stabilize_pitch.get_p(angle_error) + target_rate, EARTH_FRAME);
 }
 
 // Yaw with rate input and stabilized in the earth frame
 static void
 get_yaw_rate_stabilized_ef(int32_t stick_angle)
 {
-
     int32_t angle_error = 0;
 
     // convert the input to the desired yaw rate
     int32_t target_rate = stick_angle * g.acro_p;
 
     // convert the input to the desired yaw rate
-    nav_yaw += target_rate * G_Dt;
-    nav_yaw = wrap_360(nav_yaw);
+    yaw_axis += target_rate * G_Dt;
+    yaw_axis = wrap_360(yaw_axis);
 
     // calculate difference between desired heading and current heading
-    angle_error = wrap_180(nav_yaw - ahrs.yaw_sensor);
+    angle_error = wrap_180(yaw_axis - ahrs.yaw_sensor);
 
     // limit the maximum overshoot
     angle_error	= constrain(angle_error, -MAX_YAW_OVERSHOOT, MAX_YAW_OVERSHOOT);
@@ -209,12 +197,157 @@ get_yaw_rate_stabilized_ef(int32_t stick_angle)
     	angle_error = 0;
     }
 
-    // update nav_yaw to be within max_angle_overshoot of our current heading
-    nav_yaw = wrap_360(angle_error + ahrs.yaw_sensor);
+    // update yaw_axis to be within max_angle_overshoot of our current heading
+    yaw_axis = wrap_360(angle_error + ahrs.yaw_sensor);
 
     // set earth frame targets for rate controller
-	set_yaw_rate_target(g.pi_stabilize_yaw.get_p(angle_error)+target_rate, EARTH_FRAME);
+	  set_yaw_rate_target(g.pid_stabilize_yaw.get_p(angle_error)+target_rate, EARTH_FRAME);
 }
+
+/////////////////////////////////////////////////////////////
+#define _BLEED 300
+#define BLEED_CONST (_BLEED/(_BLEED + 1.0))
+
+// use max stick deflection of roll, pitch or yaw to determine level mix
+float CalcLevelMix()
+{
+  float r = ((float)labs(g.rc_1.control_in)) / MAX_INPUT_ROLL_ANGLE;
+  float p = ((float)labs(g.rc_2.control_in)) / MAX_INPUT_PITCH_ANGLE;
+
+  p = max(r,p);
+
+  return 1.0 - p;
+}
+
+int32_t CalcLimit(int32_t acro_rate, int32_t max_level_rate)
+{
+  return labs(labs(acro_rate) - max_level_rate);
+}
+
+// Roll with rate input and stabilized to body frame
+static void
+get_roll_rate_stabilized_bf(int32_t roll_stick_angle)
+{
+    // Update axis movement
+    roll_axis -= ((omega.x * DEGX100) * ins.get_delta_time());
+
+    // Convert the input to the desired roll rate
+    int32_t acro_rate = roll_stick_angle * g.acro_p;
+
+    // Calculate rate limiter to avoid discontinuity when crossing 180
+    float lf = CalcLevelMix() * (g.acro_balance_roll/100.0);
+    int32_t limit = CalcLimit(acro_rate, lf * g.acro_p * 4500);
+    
+    // Calculate level rate for blending (similar to MultiWiii horizon mode), ignore roll level as we approach pitch +-90 (cos_pitch_x)
+    int32_t level_rate = g.acro_p * constrain(-(ahrs.roll_sensor+roll_axis), -4500, 4500) * lf * cos_pitch_x;
+
+    // combine/limit rate
+    acro_rate = constrain((acro_rate + level_rate), -limit, limit);
+
+    if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
+        roll_axis = 0;
+        acro_rate = 0;
+    }
+
+    // Set body frame target for rate controller (correction rate + acro rate)
+    set_roll_rate_target(g.pid_stabilize_roll.get_p(roll_axis) 
+                       + ((labs(roll_axis) < 500) ? g.pid_stabilize_roll.get_i(roll_axis, G_Dt) 
+                                                  : g.pid_stabilize_roll.get_integrator())
+                       + g.pid_stabilize_roll.get_d(roll_axis, G_Dt) 
+                       + acro_rate, BODY_FRAME);
+
+    // Calculate target for next iteration
+    roll_axis += (acro_rate * G_Dt);    
+    // Bleed axis error
+    roll_axis = roll_axis * BLEED_CONST;
+    // Error with maximum of +- max_angle_overshoot
+    roll_axis	= constrain(roll_axis, -MAX_BF_ROLL_OVERSHOOT, MAX_BF_ROLL_OVERSHOOT);
+}
+
+// Pitch with rate input and stabilized to body frame
+static void
+get_pitch_rate_stabilized_bf(int32_t pitch_stick_angle, int32_t yaw_stick_angle)
+{
+    // Update axis movement
+    pitch_axis -= ((omega.y * DEGX100) * ins.get_delta_time());
+    yaw_axis   -= ((omega.z * DEGX100) * ins.get_delta_time());
+
+    // Convert the input to the desired rate
+    int32_t pitch_acro_rate = pitch_stick_angle * g.acro_p;
+    int32_t yaw_acro_rate = yaw_stick_angle * g.acro_p;
+
+    // Calculate pitch rate limiter to avoid discontinuity when crossing 180
+    float lf = CalcLevelMix() * (g.acro_balance_pitch/100.0); 
+    int32_t limit = CalcLimit(pitch_acro_rate, lf * g.acro_p * 4500);
+
+    // Calculate level rate for blending (similar to MultiWiii horizon mode)
+    int32_t level_rate = g.acro_p * constrain(-(ahrs.pitch_sensor+pitch_axis), -4500, 4500) * lf;
+
+    // when leveling (acro < max_level), maintain heading by splitting between pitch/yaw
+    if(labs(pitch_acro_rate) < (g.acro_p * 4500 * lf) ) 
+    {
+      // combine/limit rate
+      pitch_acro_rate = constrain((pitch_acro_rate + level_rate), -limit, limit);
+
+      yaw_acro_rate += pitch_acro_rate * (-sin_roll);
+      pitch_acro_rate *= cos_roll_x;
+    }
+    else
+    {
+      // combine/limit rate
+      pitch_acro_rate = constrain((pitch_acro_rate + level_rate), -limit, limit);
+    }
+
+    if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
+        pitch_axis = 0;
+        pitch_acro_rate = 0;
+        yaw_axis = 0;
+        yaw_acro_rate = 0;
+    }
+
+//// PITCH ////
+    // Set body frame target for rate controller (correction rate + acro rate)
+    set_pitch_rate_target(g.pid_stabilize_pitch.get_p(pitch_axis) 
+                        + ((labs(pitch_axis) < 500) ? g.pid_stabilize_pitch.get_i(pitch_axis, G_Dt) 
+                                                    : g.pid_stabilize_pitch.get_integrator())
+                        + g.pid_stabilize_pitch.get_d(pitch_axis, G_Dt) 
+                        + pitch_acro_rate, BODY_FRAME);
+
+#pragma message(quickly leak integrator if pushing in wrong direction?)
+
+    // Calculate target for next iteration
+    pitch_axis += (pitch_acro_rate * G_Dt);
+    // Bleed axis error
+    pitch_axis = pitch_axis * BLEED_CONST;
+    // Error with maximum of +- max_angle_overshoot
+    pitch_axis= constrain(pitch_axis, -MAX_BF_PITCH_OVERSHOOT, MAX_BF_PITCH_OVERSHOOT);
+
+
+//// YAW ////
+    // Set body frame target for rate controller (correction rate + acro rate)
+    set_yaw_rate_target(g.pid_stabilize_yaw.get_p(yaw_axis) 
+                      + ((labs(yaw_axis) < 500) ? g.pid_stabilize_yaw.get_i(yaw_axis, G_Dt) 
+                                                : g.pid_stabilize_yaw.get_integrator())
+                      + g.pid_stabilize_yaw.get_d(yaw_axis, G_Dt) 
+                      + yaw_acro_rate, BODY_FRAME);
+
+    // Calculate target for next iteration
+    yaw_axis += (yaw_acro_rate * G_Dt);
+    // Bleed axis error
+    yaw_axis = yaw_axis * BLEED_CONST;
+    // Error with maximum of +- max_angle_overshoot
+    yaw_axis= constrain(yaw_axis, -MAX_BF_YAW_OVERSHOOT, MAX_BF_YAW_OVERSHOOT);
+}
+
+// Yaw with rate input and stabilized to body frame
+static void
+get_yaw_rate_stabilized_bf(int32_t yaw_stick_angle)
+{
+  // moved to get_pitch_rate_stabilized_bf() due to yaw/pitch level blending
+}
+//////////////////////////////////////////////////////////////////////////////
+
+
 
 // set_roll_rate_target - to be called by upper controllers to set roll rate targets in the earth frame
 void set_roll_rate_target( int32_t desired_rate, uint8_t earth_or_body_frame ) {
@@ -462,7 +595,9 @@ get_rate_roll(int32_t target_rate)
     if( motors.reached_limit(AP_MOTOR_ROLLPITCH_LIMIT) ) {
         i	= g.pid_rate_roll.get_integrator();
     }else{
-        i   = g.pid_rate_roll.get_i(rate_error, G_Dt);
+        //i   = g.pid_rate_roll.get_i(rate_error, G_Dt);
+        // testing leaky integrators for better takeoff stability
+        i = g.pid_rate_roll.get_leaky_i(rate_error, G_Dt, RATE_INTEGRATOR_LEAK_RATE);
     }
 
     d = g.pid_rate_roll.get_d(rate_error, G_Dt);
@@ -504,7 +639,9 @@ get_rate_pitch(int32_t target_rate)
     if( motors.reached_limit(AP_MOTOR_ROLLPITCH_LIMIT) ) {
         i = g.pid_rate_pitch.get_integrator();
     }else{
-        i = g.pid_rate_pitch.get_i(rate_error, G_Dt);
+        //i = g.pid_rate_pitch.get_i(rate_error, G_Dt);
+        // testing leaky integrators for better takeoff stability
+        i = g.pid_rate_pitch.get_leaky_i(rate_error, G_Dt, RATE_INTEGRATOR_LEAK_RATE);
     }
     d = g.pid_rate_pitch.get_d(rate_error, G_Dt);
     output = p + i + d;
@@ -541,7 +678,9 @@ get_rate_yaw(int32_t target_rate)
     if( motors.reached_limit(AP_MOTOR_YAW_LIMIT) ) {
         i = g.pid_rate_yaw.get_integrator();
     }else{
-        i = g.pid_rate_yaw.get_i(rate_error, G_Dt);
+        // i = g.pid_rate_yaw.get_i(rate_error, G_Dt);
+        // testing leaky integrators for better takeoff stability
+        i = g.pid_rate_yaw.get_leaky_i(rate_error, G_Dt, RATE_INTEGRATOR_LEAK_RATE);
     }
     d = g.pid_rate_yaw.get_d(rate_error, G_Dt);
 
@@ -839,31 +978,25 @@ get_throttle_accel(int16_t z_target_accel)
 
 // get_pilot_desired_throttle - transform pilot's throttle input to make cruise throttle mid stick
 // used only for manual throttle modes
-// returns throttle output 0 to 1000
-#define THROTTLE_IN_MIDDLE 500          // the throttle mid point
-static int16_t get_pilot_desired_throttle(int16_t throttle_control)
+// returns throttle output [g.throttle_min to g.throttle_max]
+static int16_t get_pilot_desired_throttle()   
 {
+    int16_t throttle_control = g.rc_3.control_in; // 0:DZ,DZ+1:1000 => 0:0,g.throttle_min:g.throttle_max
+    int16_t mid_stick = g.rc_3.trim_range;        // control value at mid stick (defined by trim)
     int16_t throttle_out;
-
-    // exit immediately in the simple cases
-    if( throttle_control == 0 || g.throttle_mid == 500) {
-        return throttle_control;
-    }
 
     // ensure reasonable throttle values
     throttle_control = constrain(throttle_control,0,1000);
     g.throttle_mid = constrain(g.throttle_mid,300,700);
 
-    // check throttle is above, below or in the deadband
-    if (throttle_control < THROTTLE_IN_MIDDLE) {
-        // below the deadband
-        throttle_out = g.throttle_min + ((float)(throttle_control-g.throttle_min))*((float)(g.throttle_mid - g.throttle_min))/((float)(500-g.throttle_min));
-    }else if(throttle_control > THROTTLE_IN_MIDDLE) {
-        // above the deadband
-        throttle_out = g.throttle_mid + ((float)(throttle_control-500))*(float)(1000-g.throttle_mid)/500.0f;
-    }else{
-        // must be in the deadband
-        throttle_out = g.throttle_mid;
+    // check throttle is above, below trim
+    if (throttle_control < mid_stick) // below trim
+    {        
+        throttle_out = g.throttle_min + ((float)(throttle_control-g.throttle_min))*((float)(g.throttle_mid-g.throttle_min))/((float)(mid_stick-g.throttle_min));
+    }
+    else // above trim
+    {
+        throttle_out = g.throttle_mid + ((float)(throttle_control-mid_stick))*((float)(g.throttle_max-g.throttle_mid))/((float)(g.throttle_max-mid_stick));
     }
 
     return throttle_out;
@@ -872,11 +1005,13 @@ static int16_t get_pilot_desired_throttle(int16_t throttle_control)
 // get_pilot_desired_climb_rate - transform pilot's throttle input to
 // climb rate in cm/s.  we use radio_in instead of control_in to get the full range
 // without any deadzone at the bottom
-#define THROTTLE_IN_DEADBAND 100        // the throttle input channel's deadband in PWM
-#define THROTTLE_IN_DEADBAND_TOP (THROTTLE_IN_MIDDLE+THROTTLE_IN_DEADBAND)  // top of the deadband
-#define THROTTLE_IN_DEADBAND_BOTTOM (THROTTLE_IN_MIDDLE-THROTTLE_IN_DEADBAND)  // bottom of the deadband
-static int16_t get_pilot_desired_climb_rate(int16_t throttle_control)
+#define PILOTZ_DZ 50        // the throttle input channel's deadband in PWM
+static int16_t get_pilot_desired_climb_rate()
 {
+    int16_t throttle_control = g.rc_3.control_in; // 0:DZ,DZ+1:1000 => 0:0,g.throttle_min:g.throttle_max
+    int16_t dz_top = g.rc_3.trim_range + (PILOTZ_DZ/2); 
+    int16_t dz_bot = g.rc_3.trim_range - (PILOTZ_DZ/2); 
+
     int16_t desired_rate = 0;
 
     // throttle failsafe check
@@ -888,12 +1023,12 @@ static int16_t get_pilot_desired_climb_rate(int16_t throttle_control)
     throttle_control = constrain(throttle_control,0,1000);
 
     // check throttle is above, below or in the deadband
-    if (throttle_control < THROTTLE_IN_DEADBAND_BOTTOM) {
+    if (throttle_control < dz_bot) {
         // below the deadband
-        desired_rate = (int32_t)g.pilot_velocity_z_max * (throttle_control-THROTTLE_IN_DEADBAND_BOTTOM) / (THROTTLE_IN_MIDDLE - THROTTLE_IN_DEADBAND);
-    }else if (throttle_control > THROTTLE_IN_DEADBAND_TOP) {
+        desired_rate = ((int32_t)g.pilot_velocity_z_max * (throttle_control-dz_bot)) / (dz_bot-g.throttle_min);
+    }else if (throttle_control > dz_top) {
         // above the deadband
-        desired_rate = (int32_t)g.pilot_velocity_z_max * (throttle_control-THROTTLE_IN_DEADBAND_TOP) / (THROTTLE_IN_MIDDLE - THROTTLE_IN_DEADBAND);
+        desired_rate = ((int32_t)g.pilot_velocity_z_max * (throttle_control-dz_top)) / (g.throttle_max-dz_top);
     }else{
         // must be in the deadband
         desired_rate = 0;
@@ -904,6 +1039,12 @@ static int16_t get_pilot_desired_climb_rate(int16_t throttle_control)
 
     return desired_rate;
 }
+
+//TODO remove all dependecies on these
+#define THROTTLE_IN_MIDDLE 500
+#define THROTTLE_IN_DEADBAND 100        // the throttle input channel's deadband in PWM
+#define THROTTLE_IN_DEADBAND_TOP (THROTTLE_IN_MIDDLE+THROTTLE_IN_DEADBAND)  // top of the deadband
+#define THROTTLE_IN_DEADBAND_BOTTOM (THROTTLE_IN_MIDDLE-THROTTLE_IN_DEADBAND)  // bottom of the deadband
 
 // get_pilot_desired_acceleration - transform pilot's throttle input to a desired acceleration
 // default upper and lower bounds are 500 cm/s/s (roughly 1/2 a G)
@@ -1019,7 +1160,7 @@ get_throttle_rate(int16_t z_target_speed)
 // updates accel based throttle controller targets
 // Note: max_climb_rate is an optional parameter to allow reuse of this function by landing controller
 static void
-get_throttle_althold(int32_t target_alt, int16_t min_climb_rate, int16_t max_climb_rate)
+get_throttle_althold(int32_t target_alt, int16_t target_climb_rate, int16_t min_climb_rate, int16_t max_climb_rate)
 {
     int32_t alt_error;
     int16_t desired_rate;
@@ -1041,7 +1182,7 @@ get_throttle_althold(int32_t target_alt, int16_t min_climb_rate, int16_t max_cli
     }else{
         desired_rate = 0;
     }
-
+    desired_rate = desired_rate + target_climb_rate; // correction + continuing rate
     desired_rate = constrain(desired_rate, min_climb_rate, max_climb_rate);
 
     // call rate based throttle controller which will update accel based throttle controller targets
@@ -1058,13 +1199,14 @@ get_throttle_althold(int32_t target_alt, int16_t min_climb_rate, int16_t max_cli
 static void
 get_throttle_althold_with_slew(int32_t target_alt, int16_t min_climb_rate, int16_t max_climb_rate)
 {
+    int32_t delta = constrain(target_alt-controller_desired_alt, min_climb_rate*0.02, max_climb_rate*0.02);
     // limit target altitude change
-    controller_desired_alt += constrain(target_alt-controller_desired_alt, min_climb_rate*0.02, max_climb_rate*0.02);
+    controller_desired_alt += delta;
 
     // do not let target altitude get too far from current altitude
     controller_desired_alt = constrain(controller_desired_alt,current_loc.alt-750,current_loc.alt+750);
-
-    get_throttle_althold(controller_desired_alt, min_climb_rate-250, max_climb_rate+250);   // 250 is added to give head room to alt hold controller
+    
+    get_throttle_althold(controller_desired_alt, delta*50, min_climb_rate-250, max_climb_rate+250);   // 250 is added to give head room to alt hold controller
 }
 
 // get_throttle_rate_stabilized - rate controller with additional 'stabilizer'
@@ -1075,12 +1217,17 @@ get_throttle_rate_stabilized(int16_t target_rate)
 {
     controller_desired_alt += target_rate * 0.02;
 
+    int16_t delta_lim = 750;
+    if(target_rate != 0)
+    {
+      delta_lim = abs(target_rate) / 4; // 250ms 'lag' when pilot adjusting  (essentially velocity control...)
+    }
     // do not let target altitude get too far from current altitude
-    controller_desired_alt = constrain(controller_desired_alt,current_loc.alt-750,current_loc.alt+750);
+    controller_desired_alt = constrain(controller_desired_alt,current_loc.alt-delta_lim,current_loc.alt+delta_lim);
 
     set_new_altitude(controller_desired_alt);
 
-    get_throttle_althold(controller_desired_alt, -g.pilot_velocity_z_max-250, g.pilot_velocity_z_max+250);   // 250 is added to give head room to alt hold controller
+    get_throttle_althold(controller_desired_alt, target_rate, -g.pilot_velocity_z_max-250, g.pilot_velocity_z_max+250);   // 250 is added to give head room to alt hold controller
 }
 
 // get_throttle_land - high level landing logic
@@ -1158,7 +1305,7 @@ static void reset_I_all(void)
     reset_optflow_I();
 
     // This is the only place we reset Yaw
-    g.pi_stabilize_yaw.reset_I();
+    g.pid_stabilize_yaw.reset_I();
 }
 
 static void reset_rate_I()
@@ -1209,6 +1356,6 @@ static void reset_stability_I(void)
 {
     // Used to balance a quad
     // This only needs to be reset during Auto-leveling in flight
-    g.pi_stabilize_roll.reset_I();
-    g.pi_stabilize_pitch.reset_I();
+    g.pid_stabilize_roll.reset_I();
+    g.pid_stabilize_pitch.reset_I();
 }

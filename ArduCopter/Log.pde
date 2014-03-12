@@ -634,9 +634,9 @@ static void Log_Write_Iterm()
     DataFlash.WriteByte(HEAD_BYTE2);
     DataFlash.WriteByte(LOG_ITERM_MSG);
 
-    DataFlash.WriteInt((int16_t)g.pi_stabilize_roll.get_integrator());   	// 1
-    DataFlash.WriteInt((int16_t)g.pi_stabilize_pitch.get_integrator());  	// 2
-    DataFlash.WriteInt((int16_t)g.pi_stabilize_yaw.get_integrator());    	// 3
+    DataFlash.WriteInt((int16_t)g.pid_stabilize_roll.get_integrator());   	// 1
+    DataFlash.WriteInt((int16_t)g.pid_stabilize_pitch.get_integrator());  	// 2
+    DataFlash.WriteInt((int16_t)g.pid_stabilize_yaw.get_integrator());    	// 3
     DataFlash.WriteInt((int16_t)g.pid_rate_roll.get_integrator());     		// 4
     DataFlash.WriteInt((int16_t)g.pid_rate_pitch.get_integrator());    	 	// 5
     DataFlash.WriteInt((int16_t)g.pid_rate_yaw.get_integrator());    	 	// 6

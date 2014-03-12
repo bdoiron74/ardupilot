@@ -133,24 +133,32 @@ void AP_MotorsMatrix::output_armed()
 
         // initialise rc_yaw_contrained_pwm that we will certainly output and rc_yaw_excess that we will do on best-efforts basis.
         // Note: these calculations and many others below depend upon _yaw_factors always being 0, -1 or 1.
-        if( _rc_yaw->pwm_out < -AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM ) {
-            rc_yaw_constrained_pwm = -AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
-            rc_yaw_excess = _rc_yaw->pwm_out+AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
-        }else if( _rc_yaw->pwm_out > AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM ) {
-            rc_yaw_constrained_pwm = AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
-            rc_yaw_excess = _rc_yaw->pwm_out-AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
-        }else{
-            rc_yaw_constrained_pwm = _rc_yaw->pwm_out;
-            rc_yaw_excess = 0;
+        if(_frame_orientation != AP_MOTORS_V_FRAME)
+        {
+          if( _rc_yaw->pwm_out < -AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM ) {
+              rc_yaw_constrained_pwm = -AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
+              rc_yaw_excess = _rc_yaw->pwm_out+AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
+          }else if( _rc_yaw->pwm_out > AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM ) {
+              rc_yaw_constrained_pwm = AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
+              rc_yaw_excess = _rc_yaw->pwm_out-AP_MOTORS_MATRIX_YAW_LOWER_LIMIT_PWM;
+          }else
+          {
+              rc_yaw_constrained_pwm = _rc_yaw->pwm_out;
+              rc_yaw_excess = 0;
+          }
         }
-
+        else // disabled limiting for VTail hack
+        {
+          rc_yaw_constrained_pwm = _rc_yaw->pwm_out;
+          rc_yaw_excess = 0;
+        }
         // initialise upper and lower margins
         upper_margin = lower_margin = out_max - out_min;
 
         // add roll, pitch, throttle and constrained yaw for each motor
         for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
             if( motor_enabled[i] ) {
-                motor_out[i] = _rc_throttle->radio_out +
+                motor_out[i] = _rc_throttle->radio_out * _throttle_factor[i] +
                                _rc_roll->pwm_out * _roll_factor[i] +
                                _rc_pitch->pwm_out * _pitch_factor[i] +
                                rc_yaw_constrained_pwm * _yaw_factor[i];
@@ -323,7 +331,7 @@ void AP_MotorsMatrix::output_test()
 }
 
 // add_motor
-void AP_MotorsMatrix::add_motor_raw(int8_t motor_num, float roll_fac, float pitch_fac, float yaw_fac, int8_t testing_order)
+void AP_MotorsMatrix::add_motor_raw(int8_t motor_num, float throt_fac, float roll_fac, float pitch_fac, float yaw_fac, int8_t testing_order)
 {
     // ensure valid motor number is provided
     if( motor_num >= 0 && motor_num < AP_MOTORS_MAX_NUM_MOTORS ) {
@@ -335,6 +343,7 @@ void AP_MotorsMatrix::add_motor_raw(int8_t motor_num, float roll_fac, float pitc
         }
 
         // set roll, pitch, thottle factors and opposite motor (for stability patch)
+        _throttle_factor[motor_num] = throt_fac;
         _roll_factor[motor_num] = roll_fac;
         _pitch_factor[motor_num] = pitch_fac;
         _yaw_factor[motor_num] = yaw_fac;
@@ -354,6 +363,7 @@ void AP_MotorsMatrix::add_motor(int8_t motor_num, float angle_degrees, int8_t di
     // call raw motor set-up method
     add_motor_raw(
         motor_num,
+        1.0F,
         cos(radians(angle_degrees + 90)),               // roll factor
         cos(radians(angle_degrees)),                    // pitch factor
         (float)direction,                                               // yaw factor
@@ -373,6 +383,7 @@ void AP_MotorsMatrix::remove_motor(int8_t motor_num)
 
         // disable the motor, set all factors to zero
         motor_enabled[motor_num] = false;
+        _throttle_factor[motor_num] = 0;
         _roll_factor[motor_num] = 0;
         _pitch_factor[motor_num] = 0;
         _yaw_factor[motor_num] = 0;

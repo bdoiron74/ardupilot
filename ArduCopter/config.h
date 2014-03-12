@@ -46,7 +46,7 @@
 //
 
 #ifndef CONFIG_APM_HARDWARE
- # define CONFIG_APM_HARDWARE APM_HARDWARE_APM1
+ # define CONFIG_APM_HARDWARE APM_HARDWARE_APM2
 #endif
 
 //////////////////////////////////////////////////////////////////////////////
@@ -100,6 +100,7 @@
   # define MPU6K_FILTER                 10
 #endif
 
+#define RATE_INTEGRATOR_LEAK_RATE 0.01 // testing leaky integrators for better takeoff stability
 
 // optical flow doesn't work in SITL yet
 #ifdef DESKTOP_BUILD
@@ -711,6 +712,9 @@
 #ifndef STABILIZE_ROLL_I
  # define STABILIZE_ROLL_I          0.0
 #endif
+#ifndef STABILIZE_ROLL_D
+ # define STABILIZE_ROLL_D          0.0
+#endif
 #ifndef STABILIZE_ROLL_IMAX
  # define STABILIZE_ROLL_IMAX    	8.0            // degrees
 #endif
@@ -721,6 +725,9 @@
 #ifndef STABILIZE_PITCH_I
  # define STABILIZE_PITCH_I         0.0
 #endif
+#ifndef STABILIZE_PITCH_D
+ # define STABILIZE_PITCH_D         0.0
+#endif
 #ifndef STABILIZE_PITCH_IMAX
  # define STABILIZE_PITCH_IMAX   	8.0            // degrees
 #endif
@@ -730,6 +737,9 @@
 #endif
 #ifndef  STABILIZE_YAW_I
  # define STABILIZE_YAW_I           0.0
+#endif
+#ifndef  STABILIZE_YAW_D
+ # define STABILIZE_YAW_D           0.0
 #endif
 #ifndef  STABILIZE_YAW_IMAX
  # define STABILIZE_YAW_IMAX        8.0            // degrees * 100
@@ -749,6 +759,9 @@
 #endif
 #ifndef MAX_INPUT_PITCH_ANGLE
  # define MAX_INPUT_PITCH_ANGLE     4500
+#endif
+#ifndef MAX_INPUT_YAW_ANGLE
+ # define MAX_INPUT_YAW_ANGLE       4500   //not really an 'angle' so much as a rate, but it's set up that way. 
 #endif
 #ifndef RATE_ROLL_P
  # define RATE_ROLL_P        		0.150
@@ -817,6 +830,20 @@
 #ifndef ACRO_TRAINER_ENABLED
  #define ACRO_TRAINER_ENABLED       ENABLED
 #endif
+
+// Body Frame Acro mode values
+#ifndef MAX_BF_ROLL_OVERSHOOT
+ #define MAX_BF_ROLL_OVERSHOOT			3000
+#endif
+
+#ifndef MAX_BF_PITCH_OVERSHOOT
+ #define MAX_BF_PITCH_OVERSHOOT		  3000
+#endif
+
+#ifndef MAX_BF_YAW_OVERSHOOT
+ #define MAX_BF_YAW_OVERSHOOT			  3000
+#endif
+
 
 //////////////////////////////////////////////////////////////////////////////
 // Loiter control gains
