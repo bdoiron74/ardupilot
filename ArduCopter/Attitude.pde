@@ -205,7 +205,7 @@ get_yaw_rate_stabilized_ef(int32_t stick_angle)
 }
 
 /////////////////////////////////////////////////////////////
-#define _BLEED 300
+#define _BLEED 500
 #define BLEED_CONST (_BLEED/(_BLEED + 1.0))
 
 // use max stick deflection of roll, pitch or yaw to determine level mix
@@ -260,8 +260,10 @@ get_roll_rate_stabilized_bf(int32_t roll_stick_angle)
     roll_axis += (acro_rate * G_Dt);    
     // Bleed axis error
     roll_axis = roll_axis * BLEED_CONST;
+    
+    limit = constrain((acro_rate >> 3), 500, MAX_BF_ROLL_OVERSHOOT); // 125ms limit between 5 and 30deg
     // Error with maximum of +- max_angle_overshoot
-    roll_axis	= constrain(roll_axis, -MAX_BF_ROLL_OVERSHOOT, MAX_BF_ROLL_OVERSHOOT);
+    roll_axis	= constrain(roll_axis, -limit, limit);
 }
 
 // Pitch with rate input and stabilized to body frame
@@ -319,8 +321,10 @@ get_pitch_rate_stabilized_bf(int32_t pitch_stick_angle, int32_t yaw_stick_angle)
     pitch_axis += (pitch_acro_rate * G_Dt);
     // Bleed axis error
     pitch_axis = pitch_axis * BLEED_CONST;
+
+    limit = constrain((pitch_acro_rate >> 3), 500, MAX_BF_PITCH_OVERSHOOT); // 125ms limit between 5 and 30deg
     // Error with maximum of +- max_angle_overshoot
-    pitch_axis= constrain(pitch_axis, -MAX_BF_PITCH_OVERSHOOT, MAX_BF_PITCH_OVERSHOOT);
+    pitch_axis= constrain(pitch_axis, -limit, limit);
 
 
 //// YAW ////
@@ -335,8 +339,10 @@ get_pitch_rate_stabilized_bf(int32_t pitch_stick_angle, int32_t yaw_stick_angle)
     yaw_axis += (yaw_acro_rate * G_Dt);
     // Bleed axis error
     yaw_axis = yaw_axis * BLEED_CONST;
+
+    limit = constrain((yaw_acro_rate >> 3), 500, MAX_BF_YAW_OVERSHOOT); // 125ms limit between 5 and 30deg
     // Error with maximum of +- max_angle_overshoot
-    yaw_axis= constrain(yaw_axis, -MAX_BF_YAW_OVERSHOOT, MAX_BF_YAW_OVERSHOOT);
+    yaw_axis= constrain(yaw_axis, -limit, limit);
 }
 
 // Yaw with rate input and stabilized to body frame
@@ -1218,9 +1224,9 @@ get_throttle_rate_stabilized(int16_t target_rate)
     controller_desired_alt += target_rate * 0.02;
 
     int16_t delta_lim = 750;
-    if(target_rate != 0)
+    if(target_rate != 0) // only limit when outside of the deadzone
     {
-      delta_lim = abs(target_rate) / 4; // 250ms 'lag' when pilot adjusting  (essentially velocity control...)
+      delta_lim = constrain((abs(target_rate) >> 3), 20, 750); // 125ms 'lag' when pilot adjusting  (essentially velocity control...)
     }
     // do not let target altitude get too far from current altitude
     controller_desired_alt = constrain(controller_desired_alt,current_loc.alt-delta_lim,current_loc.alt+delta_lim);
