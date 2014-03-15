@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -170,11 +170,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\avru4u6u7\ADC.h"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\ADC.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\ADC.h"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\avru4u6u7\ADC.h"
 				>
 			</File>
 			<File
@@ -574,11 +574,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardutracker\APM_Config_mavlink_hil.h"
+				RelativePath=".\arducopter\APM_Config_mavlink_hil.h"
 				>
 			</File>
 			<File
-				RelativePath=".\arducopter\APM_Config_mavlink_hil.h"
+				RelativePath=".\tools\ardutracker\APM_Config_mavlink_hil.h"
 				>
 			</File>
 			<File
@@ -650,15 +650,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\evk527\AT45DB321C.h"
-				>
-			</File>
-			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\stk525\AT45DB321C.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\xplain\AT45DB642D.h"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\evk527\AT45DB321C.h"
 				>
 			</File>
 			<File
@@ -667,6 +663,10 @@
 			</File>
 			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\usbkey\AT45DB642D.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\xplain\AT45DB642D.h"
 				>
 			</File>
 			<File
@@ -782,19 +782,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\checksum.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\checksum.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\apm2_2560_bootloader\command.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\checksum.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\common.h"
+				RelativePath=".\tools\apm2_2560_bootloader\command.h"
 				>
 			</File>
 			<File
@@ -803,6 +799,10 @@
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\common.h"
 				>
 			</File>
 			<File
@@ -842,10 +842,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\dataflash\DataFlash.h"
-				>
-			</File>
-			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\board\usbkey\Dataflash.h"
 				>
 			</File>
@@ -874,15 +870,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libraries\dataflash\DataFlash.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libraries\dataflash\DataFlash_APM1.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\dataflash\DataFlash_APM2.h"
-				>
-			</File>
-			<File
-				RelativePath=".\tools\ardutracker\defines.h"
 				>
 			</File>
 			<File
@@ -899,6 +895,10 @@
 			</File>
 			<File
 				RelativePath=".\arducopter\defines.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\ardutracker\defines.h"
 				>
 			</File>
 			<File
@@ -966,11 +966,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\arducopter\GCS.h"
+				RelativePath=".\tools\ardutracker\GCS.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardutracker\GCS.h"
+				RelativePath=".\arducopter\GCS.h"
 				>
 			</File>
 			<File
@@ -1178,10 +1178,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink.h"
 				>
 			</File>
@@ -1194,15 +1190,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink.h"
+				>
+			</File>
+			<File
 				RelativePath=".\tools\ardutracker\Mavlink_Common.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\mavlink_helpers.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\mavlink_helpers.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\mavlink_helpers.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\mavlink_helpers.h"
 				>
 			</File>
 			<File
@@ -1222,19 +1222,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_ap_adc.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_ap_adc.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_attitude.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_ap_adc.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_attitude.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_attitude.h"
 				>
 			</File>
 			<File
@@ -1254,19 +1254,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_change_operator_control.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_change_operator_control.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_change_operator_control_ack.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_change_operator_control.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_change_operator_control_ack.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_change_operator_control_ack.h"
 				>
 			</File>
 			<File
@@ -1294,19 +1294,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_debug.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_debug.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_debug_vect.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_debug.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_debug_vect.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_debug_vect.h"
 				>
 			</File>
 			<File
@@ -1318,15 +1318,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_digicam_control.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_digicam_control.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_fence_fetch_point.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_digicam_control.h"
 				>
 			</File>
 			<File
@@ -1334,7 +1330,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_fence_point.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_fence_fetch_point.h"
 				>
 			</File>
 			<File
@@ -1342,7 +1338,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_fence_status.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_fence_point.h"
 				>
 			</File>
 			<File
@@ -1350,15 +1346,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_fence_status.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_global_position.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_global_position_int.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_global_position_int.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_global_position_int.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_global_position_int.h"
 				>
 			</File>
 			<File
@@ -1394,15 +1394,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_gps_status.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_gps_status.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_heartbeat.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_gps_status.h"
 				>
 			</File>
 			<File
@@ -1410,7 +1406,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_hil_controls.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_heartbeat.h"
 				>
 			</File>
 			<File
@@ -1418,11 +1414,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_hil_rc_inputs_raw.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_hil_controls.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_hil_state.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_hil_rc_inputs_raw.h"
 				>
 			</File>
 			<File
@@ -1430,7 +1426,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_hwstatus.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_hil_state.h"
 				>
 			</File>
 			<File
@@ -1438,11 +1434,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_limits_status.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_hwstatus.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_limits_status.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_limits_status.h"
 				>
 			</File>
 			<File
@@ -1458,11 +1458,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_local_position_setpoint.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_local_position_setpoint.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_local_position_setpoint.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_local_position_setpoint.h"
 				>
 			</File>
 			<File
@@ -1470,11 +1470,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_manual_control.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_manual_control.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_manual_control.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_manual_control.h"
 				>
 			</File>
 			<File
@@ -1534,19 +1534,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_mount_configure.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_mount_configure.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_mount_control.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_mount_configure.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_mount_control.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_mount_control.h"
 				>
 			</File>
 			<File
@@ -1558,15 +1558,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_named_value_float.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_named_value_float.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_named_value_int.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_named_value_float.h"
 				>
 			</File>
 			<File
@@ -1574,7 +1570,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_nav_controller_output.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_named_value_int.h"
 				>
 			</File>
 			<File
@@ -1582,11 +1578,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_object_detection_event.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_nav_controller_output.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_optical_flow.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_object_detection_event.h"
 				>
 			</File>
 			<File
@@ -1594,7 +1590,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_param_request_list.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_optical_flow.h"
 				>
 			</File>
 			<File
@@ -1602,11 +1598,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_param_request_read.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_param_request_list.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_param_request_read.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_param_request_read.h"
 				>
 			</File>
 			<File
@@ -1618,15 +1618,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_param_value.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_param_value.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_ping.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_param_value.h"
 				>
 			</File>
 			<File
@@ -1634,15 +1630,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_ping.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_position_target.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_radio.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_radio.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_radio.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_radio.h"
 				>
 			</File>
 			<File
@@ -1654,15 +1654,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_raw_pressure.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_raw_pressure.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_override.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_raw_pressure.h"
 				>
 			</File>
 			<File
@@ -1670,7 +1666,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_raw.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_override.h"
 				>
 			</File>
 			<File
@@ -1678,11 +1674,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_scaled.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_raw.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_rc_channels_scaled.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_rc_channels_scaled.h"
 				>
 			</File>
 			<File
@@ -1694,15 +1694,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_roll_pitch_yaw_speed_thrust_setpoint.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_roll_pitch_yaw_speed_thrust_setpoint.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_roll_pitch_yaw_thrust_setpoint.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_roll_pitch_yaw_speed_thrust_setpoint.h"
 				>
 			</File>
 			<File
@@ -1710,11 +1706,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_safety_allowed_area.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_roll_pitch_yaw_thrust_setpoint.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_safety_allowed_area.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_safety_allowed_area.h"
 				>
 			</File>
 			<File
@@ -1726,15 +1726,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_scaled_imu.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_scaled_imu.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_scaled_pressure.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_scaled_imu.h"
 				>
 			</File>
 			<File
@@ -1742,11 +1738,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_sensor_offsets.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_scaled_pressure.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_sensor_offsets.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_sensor_offsets.h"
 				>
 			</File>
 			<File
@@ -1774,11 +1774,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_set_mag_offsets.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_set_mag_offsets.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\mavlink_msg_set_mag_offsets.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\mavlink_msg_set_mag_offsets.h"
 				>
 			</File>
 			<File
@@ -1806,19 +1806,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_set_roll_pitch_yaw_speed_thrust.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_set_roll_pitch_yaw_speed_thrust.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_set_roll_pitch_yaw_thrust.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_set_roll_pitch_yaw_speed_thrust.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_set_roll_pitch_yaw_thrust.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_set_roll_pitch_yaw_thrust.h"
 				>
 			</File>
 			<File
@@ -1830,15 +1830,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_state_correction.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_state_correction.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_statustext.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_state_correction.h"
 				>
 			</File>
 			<File
@@ -1846,11 +1842,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_sys_status.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_statustext.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_sys_status.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_sys_status.h"
 				>
 			</File>
 			<File
@@ -1866,11 +1866,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_vfr_hud.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_vfr_hud.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\mavlink_msg_vfr_hud.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\mavlink_msg_vfr_hud.h"
 				>
 			</File>
 			<File
@@ -1930,19 +1930,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\mavlink_types.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\mavlink_types.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\memcheck\memcheck.h"
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\mavlink_types.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\MIDI.h"
+				RelativePath=".\libraries\memcheck\memcheck.h"
 				>
 			</File>
 			<File
@@ -1955,6 +1951,10 @@
 			</File>
 			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\common\MIDI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\MIDI.h"
 				>
 			</File>
 			<File
@@ -2042,15 +2042,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\common\Printer.h"
-				>
-			</File>
-			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\Printer.h"
 				>
 			</File>
 			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\Printer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\common\Printer.h"
 				>
 			</File>
 			<File
@@ -2142,19 +2142,19 @@
 				>
 			</File>
 			<File
-				RelativePath=".\archive\waypointwritermega\sparkfun.h"
-				>
-			</File>
-			<File
 				RelativePath=".\archive\waypointwritercoptermega\sparkfun.h"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\SPI.h"
+				RelativePath=".\archive\waypointwritermega\sparkfun.h"
 				>
 			</File>
 			<File
 				RelativePath=".\libraries\desktop\include\SPI.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\peripheral\SPI.h"
 				>
 			</File>
 			<File
@@ -2170,15 +2170,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\StillImage.h"
-				>
-			</File>
-			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\common\StillImage.h"
 				>
 			</File>
 			<File
 				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\StillImage.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\StillImage.h"
 				>
 			</File>
 			<File
@@ -2210,10 +2210,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\testsuite.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\testsuite.h"
 				>
 			</File>
@@ -2223,6 +2219,10 @@
 			</File>
 			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\ardupilotmega\testsuite.h"
+				>
+			</File>
+			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v0.9\common\testsuite.h"
 				>
 			</File>
 			<File
@@ -2270,10 +2270,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\version.h"
-				>
-			</File>
-			<File
 				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\ardupilotmega\version.h"
 				>
 			</File>
@@ -2290,6 +2286,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\libraries\gcs_mavlink\include\mavlink\v1.0\common\version.h"
+				>
+			</File>
+			<File
 				RelativePath=".\libraries\desktop\include\WConstants.h"
 				>
 			</File>
@@ -2302,11 +2302,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\desktop\include\wiring.h"
+				RelativePath=".\libraries\desktop\include\avr\wiring.h"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\desktop\include\avr\wiring.h"
+				RelativePath=".\libraries\desktop\include\wiring.h"
 				>
 			</File>
 			<File
@@ -2952,11 +2952,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\serialproxy\serialproxy\Form1.resx"
+				RelativePath=".\tools\ardupilotmegaplanner\resedit\Form1.resx"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardupilotmegaplanner\resedit\Form1.resx"
+				RelativePath=".\tools\serialproxy\serialproxy\Form1.resx"
 				>
 			</File>
 			<File
@@ -3172,11 +3172,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardupilotmegaplanner\controls\OpenGLtest.resx"
+				RelativePath=".\tools\ardupilotmegaplanner\OpenGLtest.resx"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardupilotmegaplanner\OpenGLtest.resx"
+				RelativePath=".\tools\ardupilotmegaplanner\controls\OpenGLtest.resx"
 				>
 			</File>
 			<File
@@ -3372,11 +3372,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardupilotmegaplanner\gcsviews\Terminal.resx"
+				RelativePath=".\tools\ardupilotmegaplanner\3drradio\Terminal.resx"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\ardupilotmegaplanner\3drradio\Terminal.resx"
+				RelativePath=".\tools\ardupilotmegaplanner\gcsviews\Terminal.resx"
 				>
 			</File>
 			<File
@@ -3854,11 +3854,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\desktop\support\DataFlash_APM1.cpp"
+				RelativePath=".\libraries\dataflash\DataFlash_APM1.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\dataflash\DataFlash_APM1.cpp"
+				RelativePath=".\libraries\desktop\support\DataFlash_APM1.cpp"
 				>
 			</File>
 			<File
@@ -3870,11 +3870,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\projects\arduino-usbserial\Descriptors.c"
+				RelativePath=".\tools\arduppm\atmega32u2\bootloaders\arduino-usbdfu\Descriptors.c"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\bootloaders\arduino-usbdfu\Descriptors.c"
+				RelativePath=".\tools\arduppm\atmega32u2\projects\arduino-usbserial\Descriptors.c"
 				>
 			</File>
 			<File
@@ -3918,11 +3918,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\fastserial\FastSerial.cpp"
+				RelativePath=".\libraries\desktop\support\FastSerial.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\libraries\desktop\support\FastSerial.cpp"
+				RelativePath=".\libraries\fastserial\FastSerial.cpp"
 				>
 			</File>
 			<File
@@ -3938,11 +3938,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\HID.c"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\HID.c"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\HID.c"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\HID.c"
 				>
 			</File>
 			<File
@@ -3990,11 +3990,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\MIDI.c"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\MIDI.c"
 				>
 			</File>
 			<File
-				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\device\MIDI.c"
+				RelativePath=".\tools\arduppm\atmega32u2\lufa\drivers\usb\class\host\MIDI.c"
 				>
 			</File>
 			<File
@@ -4271,15 +4271,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ardutracker\Attitude.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\arducopter\Attitude.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\archive\arducopterng\Attitude.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\tools\ardutracker\Attitude.pde"
 			>
 		</File>
 		<File
@@ -4303,19 +4303,19 @@
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\commands_process.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\tools\ardutracker\commands_process.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\control_modes.pde"
+			RelativePath=".\arducopter\commands_process.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\tools\ardutracker\control_modes.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\arducopter\control_modes.pde"
 			>
 		</File>
 		<File
@@ -4347,15 +4347,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\archive\waypointwritermega\EEPROM.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\archive\arducopterng\EEPROM.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\archive\waypointwritercoptermega\EEPROM.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\archive\waypointwritermega\EEPROM.pde"
 			>
 		</File>
 		<File
@@ -4375,11 +4375,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\failsafe.pde"
+			RelativePath=".\tools\failsafe\Failsafe.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\tools\failsafe\Failsafe.pde"
+			RelativePath=".\arducopter\failsafe.pde"
 			>
 		</File>
 		<File
@@ -4419,11 +4419,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ardutracker\GCS_Mavlink.pde"
+			RelativePath=".\arducopter\GCS_Mavlink.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\GCS_Mavlink.pde"
+			RelativePath=".\tools\ardutracker\GCS_Mavlink.pde"
 			>
 		</File>
 		<File
@@ -4503,15 +4503,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ardutracker\Log.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\archive\arducopterng\Log.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\arducopter\Log.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\tools\ardutracker\Log.pde"
 			>
 		</File>
 		<File
@@ -4547,10 +4547,6 @@
 			>
 		</File>
 		<File
-			RelativePath=".\libraries\ap_navigation\examples\navigation\Navigation.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\archive\arducopterng\Navigation.pde"
 			>
 		</File>
@@ -4563,6 +4559,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\libraries\ap_navigation\examples\navigation\Navigation.pde"
+			>
+		</File>
+		<File
 			RelativePath=".\libraries\ap_navigation\examples\navigation_simple\Navigation_simple.pde"
 			>
 		</File>
@@ -4571,11 +4571,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\tools\vartest\Parameters.pde"
+			RelativePath=".\arducopter\Parameters.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\Parameters.pde"
+			RelativePath=".\tools\vartest\Parameters.pde"
 			>
 		</File>
 		<File
@@ -4619,15 +4619,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\archive\arducopterng\Sensors.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\arducopter\sensors.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\tools\ardutracker\sensors.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\archive\arducopterng\Sensors.pde"
 			>
 		</File>
 		<File
@@ -4639,11 +4639,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\setup.pde"
+			RelativePath=".\tools\ardutracker\setup.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ardutracker\setup.pde"
+			RelativePath=".\arducopter\setup.pde"
 			>
 		</File>
 		<File
@@ -4655,15 +4655,15 @@
 			>
 		</File>
 		<File
-			RelativePath=".\arducopter\system.pde"
-			>
-		</File>
-		<File
 			RelativePath=".\tools\ardutracker\system.pde"
 			>
 		</File>
 		<File
 			RelativePath=".\archive\arducopterng\System.pde"
+			>
+		</File>
+		<File
+			RelativePath=".\arducopter\system.pde"
 			>
 		</File>
 		<File
@@ -4675,11 +4675,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ardupilotmega_demo\Timers.pde"
+			RelativePath=".\tools\ppm_decoding\Timers.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\tools\ppm_decoding\Timers.pde"
+			RelativePath=".\tools\ardupilotmega_demo\Timers.pde"
 			>
 		</File>
 		<File
@@ -4695,11 +4695,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\archive\waypointwritermega\WaypointWriterCopterMega.pde"
+			RelativePath=".\archive\waypointwritercoptermega\WaypointWriterCopterMega.pde"
 			>
 		</File>
 		<File
-			RelativePath=".\archive\waypointwritercoptermega\WaypointWriterCopterMega.pde"
+			RelativePath=".\archive\waypointwritermega\WaypointWriterCopterMega.pde"
 			>
 		</File>
 	</Files>

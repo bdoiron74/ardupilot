@@ -50,6 +50,11 @@
 #define THROTTLE_CURVE_MID_THRUST   52  // throttle which produces 1/2 the maximum thrust.  expressed as a percentage of the full throttle range (i.e 0 ~ 100)
 #define THROTTLE_CURVE_MAX_THRUST   93  // throttle which produces the maximum thrust.  expressed as a percentage of the full throttle range (i.e 0 ~ 100)
 
+#define THROTTLE_BOOST_KA   1.0  
+#define THROTTLE_BOOST_KB   0.0  
+#define THROTTLE_BOOST_LIM  0  
+
+
 // bit mask for recording which limits we have reached when outputting to motors
 #define AP_MOTOR_NO_LIMITS_REACHED  0x00
 #define AP_MOTOR_ROLLPITCH_LIMIT    0x01
@@ -182,6 +187,10 @@ protected:
     AP_Int8             _throttle_curve_mid;  // throttle which produces 1/2 the maximum thrust.  expressed as a percentage (i.e. 0 ~ 100 ) of the full throttle range
     AP_Int8             _throttle_curve_max;  // throttle which produces the maximum thrust.  expressed as a percentage (i.e. 0 ~ 100 ) of the full throttle range
     uint8_t             _reached_limit;                // bit mask to record which motor limits we hit (if any) during most recent output.  Used to provide feedback to attitude controllers
+    AP_Float            _throttle_boost_ka;    // motor time constant (0.01 = very slow, 1 = instant response)
+    AP_Float            _throttle_boost_kb;    // boost factor, multiplied by the difference between the normalized motor speed estimate (based on ka) and the requested throttle
+    AP_Int16            _throttle_boost_limit; // max boost/cut to apply to the commanded throttle
+    int16_t             _motor_v_estimate[AP_MOTORS_MAX_NUM_MOTORS];
 };
 
 #endif  // AP_MOTORS

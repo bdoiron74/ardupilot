@@ -35,6 +35,24 @@ const AP_Param::GroupInfo AP_Motors::var_info[] PROGMEM = {
     // @Range: 20 80
     AP_GROUPINFO("TCRV_MAXPCT", 3, AP_Motors, _throttle_curve_max, THROTTLE_CURVE_MAX_THRUST),
 
+    // @Param: TBST_KA
+    // @DisplayName: 
+    // @Description: 
+    // @Range: 0 - 1.0
+    AP_GROUPINFO("TBST_KA", 4, AP_Motors, _throttle_boost_ka, THROTTLE_BOOST_KA),
+
+    // @Param: TBST_KB
+    // @DisplayName: 
+    // @Description: 
+    // @Range: 0 - 1.0
+    AP_GROUPINFO("TBST_KB", 5, AP_Motors, _throttle_boost_kb, THROTTLE_BOOST_KB),
+
+    // @Param: TBST_KB
+    // @DisplayName: 
+    // @Description: 
+    // @Range: 0 - 1000
+    AP_GROUPINFO("TBST_LIM", 6, AP_Motors, _throttle_boost_limit, THROTTLE_BOOST_LIM),
+
     AP_GROUPEND
 };
 

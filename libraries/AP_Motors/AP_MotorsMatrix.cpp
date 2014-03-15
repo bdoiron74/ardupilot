@@ -85,6 +85,8 @@ void AP_MotorsMatrix::output_min()
         if( motor_enabled[i] ) {
             motor_out[i] = _rc_throttle->radio_min;
             _rc->OutputCh(_motor_to_channel_map[i], motor_out[i]);
+
+            _motor_v_estimate[i] = _rc_throttle->radio_min;
         }
     }
 }
@@ -251,6 +253,17 @@ void AP_MotorsMatrix::output_armed()
             if( yaw_to_execute != rc_yaw_excess ) {
                 _reached_limit |= AP_MOTOR_YAW_LIMIT;
             }
+        }
+
+        // throttle booster, experimental. Try to get motors to the desired rpm faster
+        if(_throttle_boost_kb != 0)
+        {
+          for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
+              if( motor_enabled[i] ) {
+                  motor_out[i] = motor_out[i] + constrain( ((motor_out[i] - _motor_v_estimate[i])*_throttle_boost_kb), -_throttle_boost_limit, _throttle_boost_limit);
+                  _motor_v_estimate[i] = (_motor_v_estimate[i]*(1.0-_throttle_boost_ka)) + (motor_out[i] * _throttle_boost_ka);
+              }
+          }
         }
 
         // adjust for throttle curve
