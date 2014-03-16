@@ -261,7 +261,7 @@ void AP_MotorsMatrix::output_armed()
           for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
               if( motor_enabled[i] ) {
                   motor_out[i] = motor_out[i] + constrain( ((motor_out[i] - _motor_v_estimate[i])*_throttle_boost_kb), -_throttle_boost_limit, _throttle_boost_limit);
-                  _motor_v_estimate[i] = (_motor_v_estimate[i]*(1.0-_throttle_boost_ka)) + (motor_out[i] * _throttle_boost_ka);
+                  _motor_v_estimate[i] = _motor_v_estimate[i] + (_throttle_boost_ka * (motor_out[i] - _motor_v_estimate[i]));
               }
           }
         }
