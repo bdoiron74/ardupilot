@@ -827,21 +827,32 @@
  #define ACRO_BALANCE_PITCH			200
 #endif
 
-#ifndef ACRO_TRAINER_ENABLED
- #define ACRO_TRAINER_ENABLED       ENABLED
+#ifndef ACRO_ACCLIM_R
+ #define ACRO_ACCLIM_R			    4000
 #endif
+
+#ifndef ACRO_ACCLIM_P
+ #define ACRO_ACCLIM_P			    4000
+#endif
+
+#ifndef ACRO_ACCLIM_Y
+ #define ACRO_ACCLIM_Y			    4000
+#endif
+
+
+
 
 // Body Frame Acro mode values
 #ifndef MAX_BF_ROLL_OVERSHOOT
- #define MAX_BF_ROLL_OVERSHOOT			3000
+ #define MAX_BF_ROLL_OVERSHOOT			4500
 #endif
 
 #ifndef MAX_BF_PITCH_OVERSHOOT
- #define MAX_BF_PITCH_OVERSHOOT		  3000
+ #define MAX_BF_PITCH_OVERSHOOT		  4500
 #endif
 
 #ifndef MAX_BF_YAW_OVERSHOOT
- #define MAX_BF_YAW_OVERSHOOT			  3000
+ #define MAX_BF_YAW_OVERSHOOT			  4500
 #endif
 
 

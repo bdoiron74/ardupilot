@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-15"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-17"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -609,6 +609,10 @@ static int16_t desired_climb_rate;          // pilot desired climb rate - for lo
 float roll_axis;
 float pitch_axis;
 float yaw_axis;
+// for acceleration limiting
+int32_t prev_roll_acro_rate;
+int32_t prev_pitch_acro_rate;
+int32_t prev_yaw_acro_rate;
 
 // Filters
 AP_LeadFilter xLeadFilter;      // Long GPS lag filter
@@ -1514,11 +1518,7 @@ void update_yaw_mode(void)
 
     case YAW_ACRO:
         // pilot controlled yaw using rate controller
-        if(g.axis_enabled) {
-            get_yaw_rate_stabilized_ef(g.rc_4.control_in);
-        }else{
-            get_yaw_rate_stabilized_bf(g.rc_4.control_in);
-        }
+        get_yaw_rate_stabilized_bf(g.rc_4.control_in);
         break;
 
     case YAW_LOOK_AT_NEXT_WP:
@@ -1627,28 +1627,18 @@ void update_roll_pitch_mode(void)
     case ROLL_PITCH_ACRO:    
 
 #if FRAME_CONFIG == HELI_FRAME
-		if(g.axis_enabled) {
-            get_roll_rate_stabilized_ef(g.rc_1.control_in);
-            get_pitch_rate_stabilized_ef(g.rc_2.control_in);
-        }else{
-            // ACRO does not get SIMPLE mode ability
-            if (motors.flybar_mode == 1) {
-                g.rc_1.servo_out = g.rc_1.control_in;
-                g.rc_2.servo_out = g.rc_2.control_in;
-            } else {
-              get_roll_rate_stabilized_bf(g.rc_1.control_in);
-              get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
-            }
-		}
+        // ACRO does not get SIMPLE mode ability
+        if (motors.flybar_mode == 1) {
+            g.rc_1.servo_out = g.rc_1.control_in;
+            g.rc_2.servo_out = g.rc_2.control_in;
+        } else {
+          get_roll_rate_stabilized_bf(g.rc_1.control_in);
+          get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
+        }
 #else  // !HELI_FRAME
-		if(g.axis_enabled) {
-            get_roll_rate_stabilized_ef(g.rc_1.control_in);
-            get_pitch_rate_stabilized_ef(g.rc_2.control_in);
-        }else{
-            // ACRO does not get SIMPLE mode ability
-            get_roll_rate_stabilized_bf(g.rc_1.control_in);
-            get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
-		}
+        // ACRO does not get SIMPLE mode ability
+        get_roll_rate_stabilized_bf(g.rc_1.control_in);
+        get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
 #endif  // HELI_FRAME
         break;
 

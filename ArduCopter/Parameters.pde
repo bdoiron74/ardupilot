@@ -503,13 +503,6 @@ const AP_Param::Info var_info[] PROGMEM = {
     // @User: Standard
     GSCALAR(acro_p,                 "ACRO_P",           ACRO_P),
 
-    // @Param: AXIS_ENABLE
-    // @DisplayName: Acro Axis
-    // @Description: Used to control whether acro mode actively maintains the current angle when control sticks are released (Enabled = maintains current angle)
-    // @Values: 0:Disabled, 1:Enabled
-    // @User: Standard
-    GSCALAR(axis_enabled,           "AXIS_ENABLE",      AXIS_LOCK_ENABLED),
-
     // @Param: ACRO_BAL_ROLL
     // @DisplayName: Acro Balance Roll
     // @Description: rate at which roll angle returns to level in acro mode
@@ -526,12 +519,29 @@ const AP_Param::Info var_info[] PROGMEM = {
     // @User: Advanced
     GSCALAR(acro_balance_pitch,     "ACRO_BAL_PITCH",   ACRO_BALANCE_PITCH),
 
-    // @Param: ACRO_TRAINER
-    // @DisplayName: Acro Trainer Enabled
-    // @Description: Set to 1 (Enabled) to make roll return to within 45 degrees of level automatically
-    // @Values: 0:Disabled,1:Enabled
+    // @Param: ACRO_ACCLIM_R
+    // @DisplayName: Acro Roll Acceleration Limit
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
     // @User: Advanced
-    GSCALAR(acro_trainer_enabled,   "ACRO_TRAINER",     ACRO_TRAINER_ENABLED),
+    GSCALAR(acro_acclim_roll,     "ACRO_ACCLIM_R",   ACRO_ACCLIM_R),
+
+    // @Param: ACRO_ACCLIM_P
+    // @DisplayName: Acro Pitch Acceleration Limit
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(acro_acclim_pitch,     "ACRO_ACCLIM_P",   ACRO_ACCLIM_P),
+
+    // @Param: ACRO_ACCLIM_Y
+    // @DisplayName: Acro Yaw Acceleration Limit
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(acro_acclim_yaw,     "ACRO_ACCLIM_Y",   ACRO_ACCLIM_Y),
 
     // @Param: LED_MODE
     // @DisplayName: Copter LED Mode

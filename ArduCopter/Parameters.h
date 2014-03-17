@@ -72,9 +72,9 @@ public:
         k_param_crosstrack_min_distance,
         k_param_rssi_pin,
         k_param_throttle_accel_enabled,
-        k_param_yaw_override_behaviour,
-        k_param_acro_trainer_enabled,
-        k_param_pilot_velocity_z_max,   // 28
+        k_param_yaw_override_behaviour, //26
+
+        k_param_pilot_velocity_z_max = 28,   // 28
 
         // 65: AP_Limits Library
         k_param_limits = 65,
@@ -131,8 +131,8 @@ public:
         k_param_auto_slew_rate,
         k_param_sonar_type,
         k_param_super_simple = 155,
-        k_param_axis_enabled = 157,
-        k_param_copter_leds_mode,
+
+        k_param_copter_leds_mode = 158,
         k_param_ahrs, // AHRS group
 
         //
@@ -234,6 +234,9 @@ public:
         k_param_acro_balance_roll,      // scalar (not PID)
         k_param_acro_balance_pitch,     // scalar (not PID)
         k_param_pid_throttle_accel, // 241
+        k_param_acro_acclim_roll,
+        k_param_acro_acclim_pitch,
+        k_param_acro_acclim_yaw, // 244
 
         // 254,255: reserved
     };
@@ -267,7 +270,6 @@ public:
     AP_Int8         super_simple;
     AP_Int16        rtl_alt_final;
     AP_Int8         tilt_comp;
-    AP_Int8         axis_enabled;
     AP_Int8         copter_leds_mode;           // Operating mode of LED
                                                 // lighting system
 
@@ -357,7 +359,9 @@ public:
     AP_Float                acro_p;
     AP_Int16                acro_balance_roll;
     AP_Int16                acro_balance_pitch;
-    AP_Int8                 acro_trainer_enabled;
+    AP_Int16                acro_acclim_roll;
+    AP_Int16                acro_acclim_pitch;
+    AP_Int16                acro_acclim_yaw;
 
     // PI/D controllers
     AC_PID                  pid_rate_roll;

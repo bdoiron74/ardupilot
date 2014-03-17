@@ -104,75 +104,6 @@ get_acro_yaw(int32_t target_rate)
     set_yaw_rate_target(target_rate, BODY_FRAME);
 }
 
-// Roll with rate input and stabilized in the earth frame
-static void
-get_roll_rate_stabilized_ef(int32_t stick_angle)
-{
-    int32_t angle_error = 0;
-
-    // convert the input to the desired roll rate
-    int32_t target_rate = stick_angle * g.acro_p - (roll_axis * g.acro_balance_roll)/100;
-
-    // convert the input to the desired roll rate
-    roll_axis += target_rate * G_Dt;
-    roll_axis = wrap_180(roll_axis);
-
-    // ensure that we don't reach gimbal lock
-    if (labs(roll_axis) > 4500 && g.acro_trainer_enabled) {
-        roll_axis	= constrain(roll_axis, -4500, 4500);
-        angle_error = wrap_180(roll_axis - ahrs.roll_sensor);
-    } else {
-        // angle error with maximum of +- max_angle_overshoot
-        angle_error = wrap_180(roll_axis - ahrs.roll_sensor);
-        angle_error	= constrain(angle_error, -MAX_ROLL_OVERSHOOT, MAX_ROLL_OVERSHOOT);
-    }
-
-    if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
-        angle_error = 0;
-    }
-
-    // update roll_axis to be within max_angle_overshoot of our current heading
-    roll_axis = wrap_180(angle_error + ahrs.roll_sensor);
-
-    // set earth frame targets for rate controller
-
-    // set earth frame targets for rate controller
-	set_roll_rate_target(g.pid_stabilize_roll.get_p(angle_error) + target_rate, EARTH_FRAME);
-}
-
-// Pitch with rate input and stabilized in the earth frame
-static void
-get_pitch_rate_stabilized_ef(int32_t stick_angle)
-{
-    int32_t angle_error = 0;
-
-    // convert the input to the desired pitch rate
-    int32_t target_rate = stick_angle * g.acro_p - (pitch_axis * g.acro_balance_pitch)/100;
-
-    // convert the input to the desired pitch rate
-    pitch_axis += target_rate * G_Dt;
-    pitch_axis = wrap_180(pitch_axis);
-
-    // ensure that we don't reach gimbal lock
-    if (labs(pitch_axis) > 4500) {
-        pitch_axis	= constrain(pitch_axis, -4500, 4500);
-        angle_error = wrap_180(pitch_axis - ahrs.pitch_sensor);
-    } else {
-        // angle error with maximum of +- max_angle_overshoot
-        angle_error = wrap_180(pitch_axis - ahrs.pitch_sensor);
-        angle_error	= constrain(angle_error, -MAX_PITCH_OVERSHOOT, MAX_PITCH_OVERSHOOT);
-    }
-
-    if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
-        angle_error = 0;
-    }
-
-    // update pitch_axis to be within max_angle_overshoot of our current heading
-    pitch_axis = wrap_180(angle_error + ahrs.pitch_sensor);
-
-    // set earth frame targets for rate controller
-	  set_pitch_rate_target(g.pid_stabilize_pitch.get_p(angle_error) + target_rate, EARTH_FRAME);
-}
 
 // Yaw with rate input and stabilized in the earth frame
 static void
@@ -246,18 +177,26 @@ get_roll_rate_stabilized_bf(int32_t roll_stick_angle)
 
     if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
         roll_axis = 0;
+        prev_roll_acro_rate = 0;
         acro_rate = 0;
     }
+
+    // limit acceleration to avoid unatainable error accumulation
+    prev_roll_acro_rate = constrain(acro_rate, prev_roll_acro_rate-g.acro_acclim_roll, prev_roll_acro_rate+g.acro_acclim_roll);
+    
+    // if we've gotten ahead, drop back to limited rate
+    //if(roll_axis < 0) { if(acro_rate > 0) { acro_rate = prev_roll_acro_rate; } }
+    //else { if(acro_rate < 0) { acro_rate = prev_roll_acro_rate; } }
 
     // Set body frame target for rate controller (correction rate + acro rate)
     set_roll_rate_target(g.pid_stabilize_roll.get_p(roll_axis) 
                        + ((labs(roll_axis) < 500) ? g.pid_stabilize_roll.get_i(roll_axis, G_Dt) 
                                                   : g.pid_stabilize_roll.get_integrator())
                        + g.pid_stabilize_roll.get_d(roll_axis, G_Dt) 
-                       + acro_rate, BODY_FRAME);
+                       + prev_roll_acro_rate, BODY_FRAME);
 
     // Calculate target for next iteration
-    roll_axis += (acro_rate * G_Dt);    
+    roll_axis += (prev_roll_acro_rate * G_Dt);    
     // Bleed axis error
     roll_axis = roll_axis * BLEED_CONST;
     // Error with maximum of +- max_angle_overshoot
@@ -301,22 +240,32 @@ get_pitch_rate_stabilized_bf(int32_t pitch_stick_angle, int32_t yaw_stick_angle)
     if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
         pitch_axis = 0;
         pitch_acro_rate = 0;
+        prev_pitch_acro_rate = 0;
         yaw_axis = 0;
         yaw_acro_rate = 0;
+        prev_yaw_acro_rate = 0;
     }
 
 //// PITCH ////
+
+    // limit acceleration to avoid unatainable error accumulation
+    prev_pitch_acro_rate = constrain(pitch_acro_rate, prev_pitch_acro_rate-g.acro_acclim_pitch, prev_pitch_acro_rate+g.acro_acclim_pitch);
+
+    // if we've gotten ahead, drop back to limited rate
+    //if(pitch_axis < 0) { if(pitch_acro_rate > 0) { pitch_acro_rate = prev_pitch_acro_rate; } }
+    //else { if(pitch_acro_rate < 0) { pitch_acro_rate = prev_pitch_acro_rate; } }
+
     // Set body frame target for rate controller (correction rate + acro rate)
     set_pitch_rate_target(g.pid_stabilize_pitch.get_p(pitch_axis) 
                         + ((labs(pitch_axis) < 500) ? g.pid_stabilize_pitch.get_i(pitch_axis, G_Dt) 
                                                     : g.pid_stabilize_pitch.get_integrator())
                         + g.pid_stabilize_pitch.get_d(pitch_axis, G_Dt) 
-                        + pitch_acro_rate, BODY_FRAME);
+                        + prev_pitch_acro_rate, BODY_FRAME);
 
 #pragma message(quickly leak integrator if pushing in wrong direction?)
 
     // Calculate target for next iteration
-    pitch_axis += (pitch_acro_rate * G_Dt);
+    pitch_axis += (prev_pitch_acro_rate * G_Dt);
     // Bleed axis error
     pitch_axis = pitch_axis * BLEED_CONST;
     // Error with maximum of +- max_angle_overshoot
@@ -324,15 +273,22 @@ get_pitch_rate_stabilized_bf(int32_t pitch_stick_angle, int32_t yaw_stick_angle)
 
 
 //// YAW ////
+    // limit acceleration to avoid unatainable error accumulation
+    prev_yaw_acro_rate = constrain(yaw_acro_rate, prev_yaw_acro_rate-g.acro_acclim_yaw, prev_yaw_acro_rate+g.acro_acclim_yaw);
+
+    // if we've gotten ahead, drop back to limited rate
+    //if(yaw_axis < 0) { if(yaw_acro_rate > 0) { yaw_acro_rate = prev_yaw_acro_rate; } }
+    //else { if(yaw_acro_rate < 0) { yaw_acro_rate = prev_yaw_acro_rate; } }
+
     // Set body frame target for rate controller (correction rate + acro rate)
     set_yaw_rate_target(g.pid_stabilize_yaw.get_p(yaw_axis) 
                       + ((labs(yaw_axis) < 500) ? g.pid_stabilize_yaw.get_i(yaw_axis, G_Dt) 
                                                 : g.pid_stabilize_yaw.get_integrator())
                       + g.pid_stabilize_yaw.get_d(yaw_axis, G_Dt) 
-                      + yaw_acro_rate, BODY_FRAME);
+                      + prev_yaw_acro_rate, BODY_FRAME);
 
     // Calculate target for next iteration
-    yaw_axis += (yaw_acro_rate * G_Dt);
+    yaw_axis += (prev_yaw_acro_rate * G_Dt);
     // Bleed axis error
     yaw_axis = yaw_axis * BLEED_CONST;
     // Error with maximum of +- max_angle_overshoot
