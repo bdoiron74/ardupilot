@@ -389,8 +389,8 @@ enum gcs_severity {
 #define PIEZO_PIN AN5           //Last pin on the back ADC connector
 
 // RADIANS
-#define RADX100 0.000174532925
-#define DEGX100 5729.57795
+#define RADX100 0.000174532925  // DEG100 -> RAD
+#define DEGX100 5729.57795      // RAD -> DEG100
 
 
 // EEPROM addresses

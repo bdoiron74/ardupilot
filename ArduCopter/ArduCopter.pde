@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-17"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-25"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -606,13 +606,13 @@ static int16_t desired_climb_rate;          // pilot desired climb rate - for lo
 // ACRO Mode
 ////////////////////////////////////////////////////////////////////////////////
 // Used to control Axis lock
-float roll_axis;
-float pitch_axis;
-float yaw_axis;
+Vector3f error_bf; // x=roll, y=pitch, z=yaw
+Vector3f target_ef;
+
 // for acceleration limiting
-int32_t prev_roll_acro_rate;
-int32_t prev_pitch_acro_rate;
-int32_t prev_yaw_acro_rate;
+int32_t prev_roll_rate_bf;
+int32_t prev_pitch_rate_bf;
+int32_t prev_yaw_rate_bf;
 
 // Filters
 AP_LeadFilter xLeadFilter;      // Long GPS lag filter
@@ -841,7 +841,7 @@ static uint32_t condition_start;
 ////////////////////////////////////////////////////////////////////////////////
 // Integration time for the gyros (DCM algorithm)
 // Updated with the fast loop
-static float G_Dt = 0.02;
+static float G_Dt = 0.01;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Inertial Navigation
@@ -1071,6 +1071,9 @@ static void fast_loop()
     // -----------------------------------------
     read_radio();
     read_control_switch();
+
+    // update axis movement for tradjectory
+    update_axis_movement();
 
     // custom code/exceptions for flight modes
     // ---------------------------------------
@@ -1513,12 +1516,12 @@ void update_yaw_mode(void)
 
     case YAW_HOLD:
         // heading hold at heading held in nav_yaw but allow input from pilot
-        get_yaw_rate_stabilized_ef(g.rc_4.control_in);
+        get_yaw_rate_stabilized_ef();
         break;
 
     case YAW_ACRO:
         // pilot controlled yaw using rate controller
-        get_yaw_rate_stabilized_bf(g.rc_4.control_in);
+        // moved to get_pitch_rate_stabilized_bf() due to yaw/pitch level blending
         break;
 
     case YAW_LOOK_AT_NEXT_WP:
@@ -1632,13 +1635,13 @@ void update_roll_pitch_mode(void)
             g.rc_1.servo_out = g.rc_1.control_in;
             g.rc_2.servo_out = g.rc_2.control_in;
         } else {
-          get_roll_rate_stabilized_bf(g.rc_1.control_in);
-          get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
+          get_roll_rate_stabilized_bf();
+          get_pitch_rate_stabilized_bf();
         }
 #else  // !HELI_FRAME
         // ACRO does not get SIMPLE mode ability
-        get_roll_rate_stabilized_bf(g.rc_1.control_in);
-        get_pitch_rate_stabilized_bf(g.rc_2.control_in, g.rc_4.control_in);
+        get_roll_rate_stabilized_bf();
+        get_pitch_rate_stabilized_bf();
 #endif  // HELI_FRAME
         break;
 

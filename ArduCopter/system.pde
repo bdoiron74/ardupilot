@@ -432,22 +432,7 @@ static void set_mode(byte mode)
         ap.manual_attitude = true;
         set_yaw_mode(YAW_ACRO);
         set_roll_pitch_mode(ROLL_PITCH_ACRO);
-        set_throttle_mode(THROTTLE_MANUAL);
-        
-        // initialize for body frame stabilization (these are used as angle error integrators)
-        roll_axis = 0;
-        pitch_axis = 0;
-        yaw_axis = 0;
-
-        // copy current motion in as starting rate for acceleration limiting
-        prev_roll_acro_rate = omega.x * DEGX100;
-        prev_pitch_acro_rate = omega.y * DEGX100;
-        prev_yaw_acro_rate = omega.z * DEGX100;
-
-        // To reset D term. May want to decouple from I.
-        g.pid_stabilize_roll.reset_I(); 
-        g.pid_stabilize_pitch.reset_I();
-        g.pid_stabilize_yaw.reset_I();
+        set_throttle_mode(THROTTLE_MANUAL);        
         break;
 
     case STABILIZE:

@@ -115,9 +115,9 @@ static NOINLINE void send_attitude(mavlink_channel_t chan)
     mavlink_msg_attitude_send(
         chan,
         millis(),
-        roll_axis * RADX100, // DEGX100 -> rad
-        pitch_axis * RADX100,
-        yaw_axis * RADX100,
+        error_bf.x * RADX100, // DEGX100 -> rad
+        error_bf.y * RADX100,
+        error_bf.z * RADX100,
         omega.x,
         omega.y,
         omega.z);
@@ -134,7 +134,7 @@ static NOINLINE void send_attitude(mavlink_channel_t chan)
         omega.x,
         omega.y,
         omega.z);
-  }
+  }  
 }
 
 #if AP_LIMITS == ENABLED
