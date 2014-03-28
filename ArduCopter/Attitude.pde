@@ -44,13 +44,8 @@ get_acro_yaw(int32_t target_rate)
 static void
 get_yaw_rate_stabilized_ef()
 {
-
 	  set_yaw_rate_target(g.rc_4.control_in * g.acro_p, EARTH_FRAME);
 }
-
-/////////////////////////////////////////////////////////////
-//#define _BLEED 500
-//#define BLEED_CONST (_BLEED/(_BLEED + 1.0))
 
 // use max stick deflection of roll, pitch or yaw to determine level mix
 float CalcLevelMix()
@@ -1020,6 +1015,7 @@ get_throttle_althold(int32_t target_alt, int16_t target_climb_rate, int16_t min_
 static void
 get_throttle_althold_with_slew(int32_t target_alt, int16_t min_climb_rate, int16_t max_climb_rate)
 {
+    // throttle controllers running at 50Hz: dt = 0.02
     int32_t delta = constrain(target_alt-controller_desired_alt, min_climb_rate*0.02, max_climb_rate*0.02);
     // limit target altitude change
     controller_desired_alt += delta;
@@ -1027,6 +1023,7 @@ get_throttle_althold_with_slew(int32_t target_alt, int16_t min_climb_rate, int16
     // do not let target altitude get too far from current altitude
     controller_desired_alt = constrain(controller_desired_alt,current_loc.alt-750,current_loc.alt+750);
     
+    // throttle controllers running at 50Hz
     get_throttle_althold(controller_desired_alt, delta*50, min_climb_rate-250, max_climb_rate+250);   // 250 is added to give head room to alt hold controller
 }
 
@@ -1036,7 +1033,7 @@ get_throttle_althold_with_slew(int32_t target_alt, int16_t min_climb_rate, int16
 static void
 get_throttle_rate_stabilized(int16_t target_rate)
 {
-    controller_desired_alt += target_rate * 0.02;
+    controller_desired_alt += target_rate * 0.02; // throttle controllers running at 50Hz: dt = 0.02
 
     int16_t delta_lim = 750;
     if(target_rate != 0) // only limit when outside of the deadzone
