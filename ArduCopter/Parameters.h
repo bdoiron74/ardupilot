@@ -237,6 +237,10 @@ public:
         k_param_acro_acclim_roll,
         k_param_acro_acclim_pitch,
         k_param_acro_acclim_yaw, // 244
+        k_param_stb_acc_roll,
+        k_param_stb_acc_pitch,
+        k_param_stb_acc_yaw, 
+        k_param_stb_max_rate, // 248
 
         // 254,255: reserved
     };
@@ -362,6 +366,10 @@ public:
     AP_Int16                acro_acclim_roll;
     AP_Int16                acro_acclim_pitch;
     AP_Int16                acro_acclim_yaw;
+    AP_Int16                stb_acc_roll;
+    AP_Int16                stb_acc_pitch;
+    AP_Int16                stb_acc_yaw;
+    AP_Int16                stb_max_rate;
 
     // PI/D controllers
     AC_PID                  pid_rate_roll;

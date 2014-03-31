@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-25"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Mar-28"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -609,10 +609,6 @@ static int16_t desired_climb_rate;          // pilot desired climb rate - for lo
 Vector3f error_bf; // x=roll, y=pitch, z=yaw
 Vector3f target_ef;
 
-// for acceleration limiting
-int32_t prev_roll_rate_bf;
-int32_t prev_pitch_rate_bf;
-int32_t prev_yaw_rate_bf;
 
 // Filters
 AP_LeadFilter xLeadFilter;      // Long GPS lag filter

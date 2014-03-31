@@ -828,15 +828,31 @@
 #endif
 
 #ifndef ACRO_ACCLIM_R
- #define ACRO_ACCLIM_R			    4000
+ #define ACRO_ACCLIM_R			    3000
 #endif
 
 #ifndef ACRO_ACCLIM_P
- #define ACRO_ACCLIM_P			    4000
+ #define ACRO_ACCLIM_P			    3000
 #endif
 
 #ifndef ACRO_ACCLIM_Y
- #define ACRO_ACCLIM_Y			    4000
+ #define ACRO_ACCLIM_Y			    3000
+#endif
+
+#ifndef STB_ACC_R
+ #define STB_ACC_R			        1000
+#endif
+
+#ifndef STB_ACC_P
+ #define STB_ACC_P			        1000
+#endif
+
+#ifndef STB_ACC_Y
+ #define STB_ACC_Y			        1000
+#endif
+
+#ifndef STB_MAX_RATE
+ #define STB_MAX_RATE			      500
 #endif
 
 

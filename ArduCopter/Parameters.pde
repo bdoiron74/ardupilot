@@ -543,6 +543,39 @@ const AP_Param::Info var_info[] PROGMEM = {
     // @User: Advanced
     GSCALAR(acro_acclim_yaw,     "ACRO_ACCLIM_Y",   ACRO_ACCLIM_Y),
 
+    // @Param: STB_ACC_R
+    // @DisplayName: Stability Roll Acceleration 
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(stb_acc_roll,     "STB_ACC_R",   STB_ACC_R),
+
+    // @Param: STB_ACC_P
+    // @DisplayName: Stability Pitch Acceleration 
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(stb_acc_pitch,     "STB_ACC_P",   STB_ACC_P),
+
+    // @Param: STB_ACC_Y
+    // @DisplayName: Stability Yaw Acceleration 
+    // @Description: cdeg/second/sample
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(stb_acc_yaw,     "STB_ACC_Y",   STB_ACC_Y),
+
+    // @Param: STB_MAX_RATE
+    // @DisplayName: Stability Max Rate 
+    // @Description: deg/second
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(stb_max_rate,     "STB_MAX_RATE",   STB_MAX_RATE),
+
+
     // @Param: LED_MODE
     // @DisplayName: Copter LED Mode
     // @Description: bitmap to control the copter led mode
