@@ -7,11 +7,8 @@ int32_t yaw_rate_bf;
 
 // for earthframe acceleration limiting
 float roll_slew_rate_ef; // floats to avoid overflow
-int32_t roll_slew_target_ef;
 float pitch_slew_rate_ef;
-int32_t pitch_slew_target_ef;
 float yaw_slew_rate_ef;
-int32_t yaw_slew_target_ef;
 
 #define ACC_LIN 500 // linear region = 5deg
 static void get_stabilize_roll(int32_t target_angle)
@@ -20,24 +17,20 @@ static void get_stabilize_roll(int32_t target_angle)
     int32_t projected_stop;
     int32_t max_rate;
   
-    // correction rate (shouldn't need this if the body frame correction is working...)
-    int32_t correction_rate = constrain(wrap_180(roll_slew_target_ef - target_ef.x), -4500, 4500) * g.acro_p;
-
     // where we'd stop if we decelerated at max acc
-    projected_stop = roll_slew_target_ef + (roll_slew_rate_ef * fabs(roll_slew_rate_ef)/(200.0*g.stb_acc_roll));
-    
+    projected_stop = target_ef.x + (roll_slew_rate_ef * fabs(roll_slew_rate_ef)/(200.0*g.stb_acc_roll));
+#warning "needs some wrap_180s?"        
     // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  labs(target_angle-roll_slew_target_ef)*(200.0*g.stb_acc_roll) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.x)*(200.0*g.stb_acc_roll) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
 
     // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
     desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     roll_slew_rate_ef = constrain(desired_rate, roll_slew_rate_ef - g.stb_acc_roll, roll_slew_rate_ef + g.stb_acc_roll);        
-    roll_slew_target_ef += roll_slew_rate_ef * G_Dt;
 
     // set targets for rate controller
-    set_roll_rate_target(roll_slew_rate_ef+correction_rate, EARTH_FRAME);
+    set_roll_rate_target(roll_slew_rate_ef, EARTH_FRAME);
 }
 
 static void get_stabilize_pitch(int32_t target_angle)
@@ -46,23 +39,20 @@ static void get_stabilize_pitch(int32_t target_angle)
     int32_t projected_stop;
     int32_t max_rate;
   
-    // correction rate (shouldn't need this if the body frame correction is working...)
-    int32_t correction_rate = constrain(wrap_180(pitch_slew_target_ef - target_ef.y), -4500, 4500) * g.acro_p;
     // where we'd stop if we decelerated at max acc
-    projected_stop = pitch_slew_target_ef + (pitch_slew_rate_ef * fabs(pitch_slew_rate_ef)/(200.0*g.stb_acc_pitch));
-    
+    projected_stop = target_ef.y + (pitch_slew_rate_ef * fabs(pitch_slew_rate_ef)/(200.0*g.stb_acc_pitch));
+#warning "needs some wrap_180s?"        
     // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  labs(target_angle-pitch_slew_target_ef)*(200.0*g.stb_acc_pitch) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.y)*(200.0*g.stb_acc_pitch) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
 
     // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
     desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     pitch_slew_rate_ef = constrain(desired_rate, pitch_slew_rate_ef - g.stb_acc_pitch, pitch_slew_rate_ef + g.stb_acc_pitch);        
-    pitch_slew_target_ef += pitch_slew_rate_ef * G_Dt;
 
     // set targets for rate controller
-    set_pitch_rate_target(pitch_slew_rate_ef+correction_rate, EARTH_FRAME);
+    set_pitch_rate_target(pitch_slew_rate_ef, EARTH_FRAME);
 
 }
 
@@ -73,23 +63,20 @@ get_stabilize_yaw(int32_t target_angle)
     int32_t projected_stop;
     int32_t max_rate;
   
-    // correction rate (shouldn't need this if the body frame correction is working...)
-    int32_t correction_rate = constrain(wrap_180(yaw_slew_target_ef - target_ef.z), -4500, 4500) * g.acro_p;
     // where we'd stop if we decelerated at max acc
-    projected_stop = yaw_slew_target_ef + (yaw_slew_rate_ef * fabs(yaw_slew_rate_ef)/(200.0*g.stb_acc_yaw));
-    
+    projected_stop = target_ef.z + (yaw_slew_rate_ef * fabs(yaw_slew_rate_ef)/(200.0*g.stb_acc_yaw));
+#warning "needs some wrap_180s?"    
     // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  labs(target_angle-yaw_slew_target_ef)*(200.0*g.stb_acc_yaw) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.z)*(200.0*g.stb_acc_yaw) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
 
     // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
     desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     yaw_slew_rate_ef = constrain(desired_rate, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
-    yaw_slew_target_ef += yaw_slew_rate_ef * G_Dt;
 
     // set targets for rate controller
-    set_yaw_rate_target(yaw_slew_rate_ef+correction_rate, EARTH_FRAME);
+    set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
 static void
@@ -262,7 +249,6 @@ update_rate_contoller_targets()
         roll_rate_bf = 0;        pitch_rate_bf = 0;        yaw_rate_bf = 0;
         roll_rate_target_bf = 0; pitch_rate_target_bf = 0; yaw_rate_target_bf = 0;
 
-        roll_slew_target_ef = target_ef.x;  pitch_slew_target_ef = target_ef.y; yaw_slew_target_ef = target_ef.z; 
 #warning "these ~should~ be set to the 'right' value on a mode change or motor restart (i.e bring the throttle to zero in flight!)"
         roll_slew_rate_ef = 0;              pitch_slew_rate_ef = 0;             yaw_slew_rate_ef = 0;
     }

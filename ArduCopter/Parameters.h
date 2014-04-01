@@ -416,9 +416,8 @@ public:
         rc_11               (CH_11),
 #endif
 
-        // PID controller	initial P	        initial I		    initial D
-        //          initial imax
-        //-----------------------------------------------------------------------------------------------------
+        // PID controller       initial P               initial I               initial D               initial imax
+        //---------------------------------------------------------------------------------------------------------------------
         pid_rate_roll           (RATE_ROLL_P,           RATE_ROLL_I,            RATE_ROLL_D,            RATE_ROLL_IMAX * 100),
         pid_rate_pitch          (RATE_PITCH_P,          RATE_PITCH_I,           RATE_PITCH_D,           RATE_PITCH_IMAX * 100),
         pid_rate_yaw            (RATE_YAW_P,            RATE_YAW_I,             RATE_YAW_D,             RATE_YAW_IMAX * 100),
@@ -434,9 +433,8 @@ public:
         pid_optflow_roll        (OPTFLOW_ROLL_P,        OPTFLOW_ROLL_I,         OPTFLOW_ROLL_D,         OPTFLOW_IMAX * 100),
         pid_optflow_pitch       (OPTFLOW_PITCH_P,       OPTFLOW_PITCH_I,        OPTFLOW_PITCH_D,        OPTFLOW_IMAX * 100),
 
-        // PI controller	initial P			initial I			initial
-        // imax
-        //----------------------------------------------------------------------
+        // PI controller	       initial P              initial I               initial  imax
+        //----------------------------------------------------------------------------------------------------------------------
         pi_loiter_lat           (LOITER_P,              LOITER_I,               LOITER_IMAX * 100),
         pi_loiter_lon           (LOITER_P,              LOITER_I,               LOITER_IMAX * 100),
 
