@@ -10,24 +10,31 @@ float roll_slew_rate_ef; // floats to avoid overflow
 float pitch_slew_rate_ef;
 float yaw_slew_rate_ef;
 
-#define ACC_LIN 500 // linear region = 5deg
+float fwrap_180cd(float error)
+{
+	if (error > 18000.0)	error -= 36000.0;
+	if (error < -18000.0)	error += 36000.0;
+	return error;
+}
+
+#define ACC_SOFTEN 500 // linear region = +/-5deg
 static void get_stabilize_roll(int32_t target_angle)
 {
-    int32_t desired_rate;
-    int32_t projected_stop;
+    float remaining;
     int32_t max_rate;
   
-    // where we'd stop if we decelerated at max acc
-    projected_stop = target_ef.x + (roll_slew_rate_ef * fabs(roll_slew_rate_ef)/(200.0*g.stb_acc_roll));
-#warning "needs some wrap_180s?"        
-    // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.x)*(200.0*g.stb_acc_roll) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    // error from here to target, adjusted for rate change delay
+    remaining = fwrap_180cd((float)target_angle-target_ef.x) - roll_slew_rate_ef/100.0; 
 
-    // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
-    desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
+    // determin max rate from here
+    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_roll));
+    // clip to max rate
+    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
+    // sign and reduce max rate near the target
+    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
-    roll_slew_rate_ef = constrain(desired_rate, roll_slew_rate_ef - g.stb_acc_roll, roll_slew_rate_ef + g.stb_acc_roll);        
+    roll_slew_rate_ef = constrain(max_rate, roll_slew_rate_ef - g.stb_acc_roll, roll_slew_rate_ef + g.stb_acc_roll);        
 
     // set targets for rate controller
     set_roll_rate_target(roll_slew_rate_ef, EARTH_FRAME);
@@ -35,45 +42,45 @@ static void get_stabilize_roll(int32_t target_angle)
 
 static void get_stabilize_pitch(int32_t target_angle)
 {
-    int32_t desired_rate;
-    int32_t projected_stop;
+    float remaining;
     int32_t max_rate;
   
-    // where we'd stop if we decelerated at max acc
-    projected_stop = target_ef.y + (pitch_slew_rate_ef * fabs(pitch_slew_rate_ef)/(200.0*g.stb_acc_pitch));
-#warning "needs some wrap_180s?"        
-    // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.y)*(200.0*g.stb_acc_pitch) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    // error from here to target, adjusted for rate change delay
+    // not sure if wrap_180 makes sense here on the pitch axis
+    remaining = fwrap_180cd((float)target_angle-target_ef.y) - pitch_slew_rate_ef/100.0; 
 
-    // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
-    desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
+    // determin max rate from here
+    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_pitch));
+    // clip to max rate
+    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
+    // sign and reduce max rate near the target
+    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
-    pitch_slew_rate_ef = constrain(desired_rate, pitch_slew_rate_ef - g.stb_acc_pitch, pitch_slew_rate_ef + g.stb_acc_pitch);        
+    pitch_slew_rate_ef = constrain(max_rate, pitch_slew_rate_ef - g.stb_acc_pitch, pitch_slew_rate_ef + g.stb_acc_pitch);        
 
     // set targets for rate controller
     set_pitch_rate_target(pitch_slew_rate_ef, EARTH_FRAME);
-
 }
 
 static void
 get_stabilize_yaw(int32_t target_angle)
 {
-    int32_t desired_rate;
-    int32_t projected_stop;
+    float remaining;
     int32_t max_rate;
   
-    // where we'd stop if we decelerated at max acc
-    projected_stop = target_ef.z + (yaw_slew_rate_ef * fabs(yaw_slew_rate_ef)/(200.0*g.stb_acc_yaw));
-#warning "needs some wrap_180s?"    
-    // highest rate allowed given our remaining distance the actual target
-    max_rate = constrain( (int32_t)safe_sqrt(  fabs((float)target_angle-target_ef.z)*(200.0*g.stb_acc_yaw) ), -100L*g.stb_max_rate, 100L*g.stb_max_rate);
+    // error from here to target, adjusted for rate change delay
+    remaining = fwrap_180cd((float)target_angle-target_ef.z) - yaw_slew_rate_ef/100.0; 
 
-    // linear rise from 0 to +/-ACC_LIN, +/-max_rate beyond
-    desired_rate = (max_rate * constrain(target_angle - projected_stop, -ACC_LIN, ACC_LIN) )/ACC_LIN;
+    // determin max rate from here
+    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_yaw));
+    // clip to max rate
+    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
+    // sign and reduce max rate near the target
+    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
-    yaw_slew_rate_ef = constrain(desired_rate, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
+    yaw_slew_rate_ef = constrain(max_rate, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
 
     // set targets for rate controller
     set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
