@@ -64,9 +64,9 @@ static void init_rc_out()
 
     motors.set_update_rate(g.rc_speed);
     motors.set_frame_orientation(g.frame_orientation);
-    motors.Init();                                              // motor initialisation
-    motors.set_min_throttle(g.throttle_min);
+    motors.set_min_throttle(g.throttle_min);  // RJD Moved above init because they're used for the throttle curve that gets initialized in AP_Motors::Init()
     motors.set_max_throttle(g.throttle_max);
+    motors.Init();                                              // motor initialisation
 
     for(byte i = 0; i < 5; i++) {
         delay(20);

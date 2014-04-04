@@ -108,23 +108,33 @@ void AP_Motors::throttle_pass_through()
 // returns true if set up successfully
 bool AP_Motors::setup_throttle_curve()
 {
-    int16_t min_pwm = _rc_throttle->radio_min;
-    int16_t max_pwm = _rc_throttle->radio_max;
-	int16_t mid_throttle_pwm = (max_pwm + min_pwm) / 2;
-    int16_t mid_thrust_pwm = min_pwm + (float)(max_pwm - min_pwm) * ((float)_throttle_curve_mid/100.0);
-    int16_t max_thrust_pwm = min_pwm + (float)(max_pwm - min_pwm) * ((float)_throttle_curve_max/100.0);
+  //  int16_t min_pwm = _rc_throttle->radio_min;
+  //  int16_t max_pwm = _rc_throttle->radio_max;
+	//int16_t mid_throttle_pwm = (max_pwm + min_pwm) / 2;
+  //  int16_t mid_thrust_pwm = min_pwm + (float)(max_pwm - min_pwm) * ((float)_throttle_curve_mid/100.0);
+  //  int16_t max_thrust_pwm = min_pwm + (float)(max_pwm - min_pwm) * ((float)_throttle_curve_max/100.0);
     bool retval = true;
 
     // some basic checks that the curve is valid
-    if( mid_thrust_pwm >= (min_pwm+_min_throttle) && mid_thrust_pwm <= max_pwm && max_thrust_pwm >= mid_thrust_pwm && max_thrust_pwm <= max_pwm ) {
+//    if( mid_thrust_pwm >= (min_pwm+_min_throttle) && mid_thrust_pwm <= max_pwm && max_thrust_pwm >= mid_thrust_pwm && max_thrust_pwm <= max_pwm ) 
+    if(1)
+    {
         // clear curve
         _throttle_curve.clear();
 
         // curve initialisation
+#if 0
         retval &= _throttle_curve.add_point(min_pwm, min_pwm);
         retval &= _throttle_curve.add_point(min_pwm+_min_throttle, min_pwm+_min_throttle);
         retval &= _throttle_curve.add_point(mid_throttle_pwm, mid_thrust_pwm);
         retval &= _throttle_curve.add_point(max_pwm, max_thrust_pwm);
+#else // HACK to linearize thrust
+#warning "Make parameters for some number of segments. This one just happens to be linear. 
+                                                                                               //  mot,  PWM
+        retval &= _throttle_curve.add_point(_rc_throttle->radio_min,               _rc_throttle->radio_min);
+        retval &= _throttle_curve.add_point(_rc_throttle->radio_min+_min_throttle, _rc_throttle->radio_min+((int16_t)_throttle_curve_mid)*10); 
+        retval &= _throttle_curve.add_point(_rc_throttle->radio_max,               _rc_throttle->radio_max);     
+#endif
 
         // return success
         return retval;
