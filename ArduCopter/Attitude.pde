@@ -17,21 +17,38 @@ float fwrap_180cd(float error)
 	return error;
 }
 
+#warning "Battery sag compensation? would this mess with the motor curve (make it curved?)"
+
+#warning "TODO - Add sport mode (angle limited full rate control)"
+
 #define ACC_SOFTEN 500 // linear region = +/-5deg
+int32_t get_max_rate(float remaining, int16_t max_vel, int16_t acc) // cdeg, deg/s, deg/s/s
+{
+  int32_t max_rate;
+
+  // determine max rate given remaining distance
+  max_rate = safe_sqrt(fabs(remaining)*(200.0*acc));
+  // clip to max rate 
+  if(max_rate > 100L*max_vel) max_rate = 100L*max_vel; 
+  // sign and reduce max rate near the target
+  max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
+  
+  return max_rate;
+}
+
+
 static void get_stabilize_roll(int32_t target_angle)
 {
     float remaining;
     int32_t max_rate;
-  
+#warning "TODO - Bypass to error gain when acc = 0"
+#warning "Think about reducing max rate (pull target a bit based on remaining distance to curve the decel side)"
+#warning "and get rid of the -roll_slew_rate_ef/100...)
     // error from here to target, adjusted for rate change delay
-    remaining = fwrap_180cd((float)target_angle-target_ef.x) - roll_slew_rate_ef/100.0; 
+    remaining = fwrap_180cd((float)target_angle-target_ef.x) - roll_slew_rate_ef/100.0;
 
-    // determin max rate from here
-    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_roll));
-    // clip to max rate
-    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
-    // sign and reduce max rate near the target
-    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
+    // max rate for given distance
+    max_rate = get_max_rate(remaining, g.stb_max_rate, g.stb_acc_roll);
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     roll_slew_rate_ef = constrain(max_rate, roll_slew_rate_ef - g.stb_acc_roll, roll_slew_rate_ef + g.stb_acc_roll);        
@@ -49,12 +66,8 @@ static void get_stabilize_pitch(int32_t target_angle)
     // not sure if wrap_180 makes sense here on the pitch axis
     remaining = fwrap_180cd((float)target_angle-target_ef.y) - pitch_slew_rate_ef/100.0; 
 
-    // determin max rate from here
-    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_pitch));
-    // clip to max rate
-    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
-    // sign and reduce max rate near the target
-    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
+    // max rate for given distance
+    max_rate = get_max_rate(remaining, g.stb_max_rate, g.stb_acc_pitch);
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     pitch_slew_rate_ef = constrain(max_rate, pitch_slew_rate_ef - g.stb_acc_pitch, pitch_slew_rate_ef + g.stb_acc_pitch);        
@@ -72,12 +85,8 @@ get_stabilize_yaw(int32_t target_angle)
     // error from here to target, adjusted for rate change delay
     remaining = fwrap_180cd((float)target_angle-target_ef.z) - yaw_slew_rate_ef/100.0; 
 
-    // determin max rate from here
-    max_rate = safe_sqrt(fabs(remaining)*(200.0*g.stb_acc_yaw));
-    // clip to max rate
-    if(max_rate > 100L*g.stb_max_rate) max_rate = 100L*g.stb_max_rate; 
-    // sign and reduce max rate near the target
-    max_rate = (max_rate * (int)constrain(remaining, -ACC_SOFTEN, ACC_SOFTEN)) / ACC_SOFTEN; 
+    // max rate for given distance
+    max_rate = get_max_rate(remaining, g.stb_max_rate, g.stb_acc_yaw);
 
     // acceleration limited rate change (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
     yaw_slew_rate_ef = constrain(max_rate, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
@@ -86,10 +95,79 @@ get_stabilize_yaw(int32_t target_angle)
     set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
+#define sign(x) ((x)<0 ? -1 : 1)
+
+#define SPORT_LIMIT 4500.0
+
+static void
+get_sport_roll(void)
+{
+    float remaining;
+    int32_t max_rate;
+  
+    // Convert the input to the desired roll rate
+    int32_t rate = g.acro_p * g.rc_1.control_in;
+
+    // error from here to limit
+    remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.x) - roll_rate_bf/100.0; 
+
+    // max rate for given distance (signed!)
+    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acclim_roll);
+
+    // if the sign doesn't match, we've passed the target
+    if(sign(max_rate) != sign(rate))
+    {
+      rate = max_rate;
+    }
+    max_rate = abs(max_rate);
+
+    // clip requsted rate
+    rate = constrain(rate, -max_rate, max_rate); 
+
+    // set targets for rate controller
+    set_roll_rate_target(rate, BODY_FRAME);
+}
+
+static void
+get_sport_pitch(void)
+{
+    float remaining;
+    int32_t max_rate;
+  
+    // Convert the input to the desired roll rate
+    int32_t rate = g.acro_p * g.rc_2.control_in;
+
+    // error from here to limit
+    remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.y) - pitch_rate_bf/100.0; 
+
+    // max rate for given distance (signed!)
+    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acclim_pitch);
+
+    // if the sign doesn't match, we've passed the target
+    if(sign(max_rate) != sign(rate))
+    {
+      rate = max_rate;
+    }
+    max_rate = abs(max_rate);
+
+    // clip requsted rate
+    rate = constrain(rate, -max_rate, max_rate); 
+
+    // set targets for rate controller
+    set_pitch_rate_target(rate, BODY_FRAME);
+}
+
+static void
+get_sport_yaw(void)
+{
+	  set_yaw_rate_target(g.acro_p * g.rc_4.control_in, BODY_FRAME);
+}
+
+
 static void
 get_acro_yaw(int32_t target_rate)
 {
-    target_rate = target_rate * g.acro_p;
+    target_rate = g.acro_p * target_rate;
 
     // set targets for rate controller
     set_yaw_rate_target(target_rate, BODY_FRAME);
@@ -100,7 +178,7 @@ get_acro_yaw(int32_t target_rate)
 static void
 get_yaw_rate_stabilized_ef()
 {
-    yaw_slew_rate_ef = constrain(g.rc_4.control_in * g.acro_p, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
+    yaw_slew_rate_ef = constrain(g.acro_p * g.rc_4.control_in, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
 	  set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
@@ -122,10 +200,10 @@ int32_t CalcLimit(int32_t acro_rate, int32_t max_level_rate)
 
 // Roll with rate input and stabilized to body frame
 static void
-get_roll_rate_stabilized_bf()
+get_acro_roll()
 {
     // Convert the input to the desired roll rate
-    int32_t roll_rate = g.rc_1.control_in * g.acro_p;
+    int32_t roll_rate = g.acro_p * g.rc_1.control_in;
 
     // Calculate rate limiter to avoid discontinuity when crossing 180
     float lf = CalcLevelMix() * (g.acro_balance_roll/100.0);
@@ -144,11 +222,11 @@ get_roll_rate_stabilized_bf()
 
 // Pitch with rate input and stabilized to body frame
 static void
-get_pitch_rate_stabilized_bf()
+get_acro_pitch()
 {
     // Convert the input to the desired rate
-    int32_t pitch_rate = g.rc_2.control_in * g.acro_p;
-    int32_t yaw_rate = g.rc_4.control_in * g.acro_p;
+    int32_t pitch_rate = g.acro_p * g.rc_2.control_in;
+    int32_t yaw_rate = g.acro_p * g.rc_4.control_in;
 
     // Calculate pitch rate limiter to avoid discontinuity when crossing 180
     float lf = CalcLevelMix() * (g.acro_balance_pitch/100.0); 
@@ -212,21 +290,6 @@ void set_yaw_rate_target( int32_t desired_rate, uint8_t earth_or_body_frame ) {
 }
 
 
-
-void update_axis_movement()
-{
-  float dt = ins.get_delta_time();
-
-  error_bf = error_bf - ((omega * DEGX100) * dt);
-
-  // calculate target rotation so stabilized modes see where we 'will' be
-  Matrix3f temp = ahrs.get_dcm_matrix();
-  temp.rotate(error_bf * RADX100);
-  temp.to_euler(&target_ef.x, &target_ef.y, &target_ef.z);
-  
-  target_ef *= DEGX100;
-  if(target_ef.z < 0) target_ef.z += 36000;
-}
 
 // update_rate_contoller_targets - converts earth frame rates to body frame rates for rate controllers
 void
@@ -704,7 +767,7 @@ static void get_look_ahead_yaw(int16_t pilot_yaw)
         nav_yaw = get_yaw_slew(nav_yaw, g_gps->ground_course, AUTO_YAW_SLEW_RATE);
         get_stabilize_yaw(wrap_360(nav_yaw + pilot_yaw));   // Allow pilot to "skid" around corners up to 45 degrees
     }else{
-        nav_yaw += pilot_yaw * g.acro_p * G_Dt;
+        nav_yaw += g.acro_p * pilot_yaw * G_Dt;
         nav_yaw = wrap_360(nav_yaw);
         get_stabilize_yaw(nav_yaw);
     }
@@ -754,10 +817,11 @@ static int16_t get_angle_boost(int16_t throttle)
     temp = constrain(temp, .5, 1.0);
 
     // reduce throttle if we go inverted
+#warning "plot this... and is it a good idea?"
     temp = constrain(9000-max(labs(ahrs.roll_sensor),labs(ahrs.pitch_sensor)), 0, 3000) / (3000 * temp);
 
     // apply scale and constrain throttle
-    throttle_out = constrain((float)(throttle-g.throttle_min) * temp + g.throttle_min, g.throttle_min, 1000);
+    throttle_out = constrain((float)throttle * temp, g.throttle_min, 1000);
 
     // to allow logging of angle boost
     angle_boost = throttle_out - throttle;

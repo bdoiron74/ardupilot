@@ -435,6 +435,14 @@ static void set_mode(byte mode)
         set_throttle_mode(THROTTLE_MANUAL);        
         break;
 
+    case SPORT:
+        ap.manual_throttle = true;
+        ap.manual_attitude = true;
+        set_yaw_mode(YAW_SPORT);
+        set_roll_pitch_mode(ROLL_PITCH_SPORT);
+        set_throttle_mode(THROTTLE_MANUAL);        
+        break;
+
     case STABILIZE:
     	ap.manual_throttle = true;
     	ap.manual_attitude = true;
@@ -686,6 +694,9 @@ print_flight_mode(uint8_t mode)
         break;
     case ACRO:
         cliSerial->print_P(PSTR("ACRO"));
+        break;
+    case SPORT:
+        cliSerial->print_P(PSTR("SPORT"));
         break;
     case ALT_HOLD:
         cliSerial->print_P(PSTR("ALT_HOLD"));

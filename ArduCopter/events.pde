@@ -69,6 +69,7 @@ static void low_battery_event(void)
         switch(control_mode) {
             case STABILIZE:
             case ACRO:
+            case SPORT:
                 // if throttle is zero disarm motors
                 if (g.rc_3.control_in == 0) {
                     init_disarm_motors();

@@ -93,7 +93,8 @@
 #define GCS_AUTO 5			// AUTO control
 #define LOITER 6			// Hold a single location
 #define RTL 7				// AUTO control
-#define NUM_MODES 8
+#define SPORT 8				// angle limited acro
+#define NUM_MODES 9
 
 // YAW debug
 // ---------

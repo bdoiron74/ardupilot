@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Apr-3"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Apr-7"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -394,7 +394,7 @@ static union {
         uint8_t auto_armed         : 1; // 8
 
         uint8_t failsafe           : 1; // 9    // A status flag for the failsafe state
-        uint8_t do_flip            : 1; // 10   // Used to enable flip code
+        uint8_t _xxx_do_flip            : 1; // 10   // Used to enable flip code
         uint8_t takeoff_complete   : 1; // 11
         uint8_t land_complete      : 1; // 12
         uint8_t compass_status     : 1; // 13
@@ -672,9 +672,9 @@ static float controller_desired_alt;
 // The cm we are off in altitude from next_WP.alt – Positive value means we are below the WP
 static int32_t altitude_error;
 // The cm/s we are moving up or down based on sensor data - Positive = UP
-static int16_t climb_rate_actual;
+//static int16_t climb_rate_actual;
 // Used to dither our climb_rate over 50hz
-static int16_t climb_rate_error;
+//static int16_t climb_rate_error;
 // The cm/s we are moving up or down based on filtered data - Positive = UP
 static int16_t climb_rate;
 // The altitude as reported by Sonar in cm – Values are 20 to 700 generally.
@@ -1068,9 +1068,6 @@ static void fast_loop()
     read_radio();
     read_control_switch();
 
-    // update axis movement for tradjectory
-    update_axis_movement();
-
     // custom code/exceptions for flight modes
     // ---------------------------------------
     update_yaw_mode();
@@ -1463,6 +1460,7 @@ bool set_yaw_mode(uint8_t new_yaw_mode)
     switch( new_yaw_mode ) {
         case YAW_HOLD:
         case YAW_ACRO:
+        case YAW_SPORT:
             yaw_initialised = true;
             break;
         case YAW_LOOK_AT_NEXT_WP:
@@ -1517,7 +1515,11 @@ void update_yaw_mode(void)
 
     case YAW_ACRO:
         // pilot controlled yaw using rate controller
-        // moved to get_pitch_rate_stabilized_bf() due to yaw/pitch level blending
+        // moved to get_acro_pitch() due to yaw/pitch level blending
+      break;
+
+    case YAW_SPORT:
+        get_sport_yaw();
         break;
 
     case YAW_LOOK_AT_NEXT_WP:
@@ -1590,6 +1592,7 @@ bool set_roll_pitch_mode(uint8_t new_roll_pitch_mode)
     switch( new_roll_pitch_mode ) {
         case ROLL_PITCH_STABLE:
         case ROLL_PITCH_ACRO:
+        case ROLL_PITCH_SPORT:
         case ROLL_PITCH_AUTO:
         case ROLL_PITCH_STABLE_OF:
         case ROLL_PITCH_TOY:
@@ -1611,34 +1614,27 @@ bool set_roll_pitch_mode(uint8_t new_roll_pitch_mode)
 // 100hz update rate
 void update_roll_pitch_mode(void)
 {
-    if (ap.do_flip) {
-        if(abs(g.rc_1.control_in) < 4000) {
-            roll_flip();
-            return;
-        }else{
-            // force an exit from the loop if we are not hands off sticks.
-            ap.do_flip = false;
-            Log_Write_Event(DATA_EXIT_FLIP);
-        }
-    }
-
     switch(roll_pitch_mode) {
     case ROLL_PITCH_ACRO:    
-
+#warning "attitude logging broken...control_roll/control_pitch"
 #if FRAME_CONFIG == HELI_FRAME
         // ACRO does not get SIMPLE mode ability
         if (motors.flybar_mode == 1) {
             g.rc_1.servo_out = g.rc_1.control_in;
             g.rc_2.servo_out = g.rc_2.control_in;
         } else {
-          get_roll_rate_stabilized_bf();
-          get_pitch_rate_stabilized_bf();
+          get_acro_roll();
+          get_acro_pitch();
         }
 #else  // !HELI_FRAME
         // ACRO does not get SIMPLE mode ability
-        get_roll_rate_stabilized_bf();
-        get_pitch_rate_stabilized_bf();
+        get_acro_roll();
+        get_acro_pitch();
 #endif  // HELI_FRAME
+        break;
+    case ROLL_PITCH_SPORT:    
+        get_sport_roll();
+        get_sport_pitch();
         break;
 
     case ROLL_PITCH_STABLE:
@@ -1832,9 +1828,6 @@ void update_throttle_mode(void)
     int16_t pilot_climb_rate;
     int16_t pilot_throttle_scaled;
 
-    if(ap.do_flip)     // this is pretty bad but needed to flip in AP modes.
-        return;
-
     // do not run throttle controllers if motors disarmed
     if( !motors.armed() ) {
         set_throttle_out(0, false);
@@ -1995,6 +1988,21 @@ static void read_AHRS(void)
 static void update_trig(void){
     Vector2f yawvector;
     Matrix3f temp   = ahrs.get_dcm_matrix();
+
+// body frame stabilization code - moved here so dcm_matrix is where we should be for trig angles.
+  float dt = ins.get_delta_time();
+
+  error_bf = error_bf - ((omega * DEGX100) * dt);
+
+  // calculate target rotation so stabilized modes see where we 'will' be
+  //Matrix3f temp = ahrs.get_dcm_matrix();
+  temp.rotate(error_bf * RADX100);
+  temp.to_euler(&target_ef.x, &target_ef.y, &target_ef.z);
+  
+  target_ef *= DEGX100;
+  if(target_ef.z < 0) target_ef.z += 36000;
+/////////////////
+
 
     yawvector.x     = temp.a.x;     // sin
     yawvector.y     = temp.b.x;         // cos

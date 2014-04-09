@@ -21,6 +21,7 @@
 #define YAW_LOOK_AT_HEADING    		    5       // point towards a particular angle (not pilot input accepted)
 #define YAW_LOOK_AHEAD					6		// WARNING!  CODE IN DEVELOPMENT NOT PROVEN
 #define YAW_TOY                         7       // THOR This is the Yaw mode
+#define YAW_SPORT                       8       
 
 
 #define ROLL_PITCH_STABLE       0
@@ -29,6 +30,7 @@
 #define ROLL_PITCH_STABLE_OF    3
 #define ROLL_PITCH_TOY          4       // THOR This is the Roll and Pitch mode
 #define ROLL_PITCH_LOITER_PR    5
+#define ROLL_PITCH_SPORT        6
 
 #define THROTTLE_MANUAL                     0   // manual throttle mode - pilot input goes directly to motors
 #define THROTTLE_MANUAL_TILT_COMPENSATED    1   // mostly manual throttle but with some tilt compensation
@@ -56,7 +58,7 @@
 
 #define CH7_DO_NOTHING 0
 #define CH7_SET_HOVER 1         // deprecated
-#define CH7_FLIP 2
+//#define CH7_FLIP 2
 #define CH7_SIMPLE_MODE 3
 #define CH7_RTL 4
 #define CH7_SAVE_TRIM 5
@@ -135,9 +137,10 @@
 #define LAND 9                          // AUTO control
 #define OF_LOITER 10                    // Hold a single location using optical flow
                                         // sensor
-#define TOY_A 11                        // THOR Enum for Toy mode
-#define TOY_M 12                        // THOR Enum for Toy mode
-#define NUM_MODES 13
+#define SPORT 11                        // angle limited acro
+#define TOY_A 12                        // THOR Enum for Toy mode
+#define TOY_M 13                        // THOR Enum for Toy mode
+#define NUM_MODES 14
 
 // CH_6 Tuning
 // -----------

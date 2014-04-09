@@ -110,7 +110,7 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
 static NOINLINE void send_attitude(mavlink_channel_t chan)
 {
 #if 1
-  if(control_mode == ACRO) // for testing - send acro attitude targets instead or absolute angles
+  if((control_mode == ACRO) || (control_mode == SPORT)) // for testing - send acro attitude targets instead or absolute angles
   {
     mavlink_msg_attitude_send(
         chan,
@@ -1177,6 +1177,7 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         switch (packet.custom_mode) {
         case STABILIZE:
         case ACRO:
+        case SPORT:
         case ALT_HOLD:
         case AUTO:
         case GUIDED:
