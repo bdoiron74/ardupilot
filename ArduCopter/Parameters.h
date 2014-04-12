@@ -234,9 +234,9 @@ public:
         k_param_acro_balance_roll,      // scalar (not PID)
         k_param_acro_balance_pitch,     // scalar (not PID)
         k_param_pid_throttle_accel, // 241
-        k_param_acro_acclim_roll,
-        k_param_acro_acclim_pitch,
-        k_param_acro_acclim_yaw, // 244
+        k_param_acro_acc_roll,
+        k_param_acro_acc_pitch,
+        k_param_acro_acc_yaw, // 244
         k_param_stb_acc_roll,
         k_param_stb_acc_pitch,
         k_param_stb_acc_yaw, 
@@ -363,9 +363,9 @@ public:
     AP_Float                acro_p;
     AP_Int16                acro_balance_roll;
     AP_Int16                acro_balance_pitch;
-    AP_Int16                acro_acclim_roll;
-    AP_Int16                acro_acclim_pitch;
-    AP_Int16                acro_acclim_yaw;
+    AP_Int16                acro_acc_roll;
+    AP_Int16                acro_acc_pitch;
+    AP_Int16                acro_acc_yaw;
     AP_Int16                stb_acc_roll;
     AP_Int16                stb_acc_pitch;
     AP_Int16                stb_acc_yaw;

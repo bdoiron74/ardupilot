@@ -827,28 +827,28 @@
  #define ACRO_BALANCE_PITCH			200
 #endif
 
-#ifndef ACRO_ACCLIM_R
- #define ACRO_ACCLIM_R			    3000
+#ifndef ACRO_ACC_ROLL
+ #define ACRO_ACC_ROLL			    3000
 #endif
 
-#ifndef ACRO_ACCLIM_P
- #define ACRO_ACCLIM_P			    3000
+#ifndef ACRO_ACC_PITCH
+ #define ACRO_ACC_PITCH			    3000
 #endif
 
-#ifndef ACRO_ACCLIM_Y
- #define ACRO_ACCLIM_Y			    3000
+#ifndef ACRO_ACC_YAW
+ #define ACRO_ACC_YAW			    3000
 #endif
 
-#ifndef STB_ACC_R
- #define STB_ACC_R			        1000
+#ifndef STB_ACC_ROLL
+ #define STB_ACC_ROLL			        1000
 #endif
 
-#ifndef STB_ACC_P
- #define STB_ACC_P			        1000
+#ifndef STB_ACC_PITCH
+ #define STB_ACC_PITCH			        1000
 #endif
 
-#ifndef STB_ACC_Y
- #define STB_ACC_Y			        1000
+#ifndef STB_ACC_YAW
+ #define STB_ACC_YAW			        1000
 #endif
 
 #ifndef STB_MAX_RATE

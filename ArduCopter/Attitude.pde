@@ -1,10 +1,5 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-// for bodyframe acceleration limiting
-int32_t roll_rate_bf;
-int32_t pitch_rate_bf;
-int32_t yaw_rate_bf;
-
 // for earthframe acceleration limiting
 float roll_slew_rate_ef; // floats to avoid overflow
 float pitch_slew_rate_ef;
@@ -112,7 +107,7 @@ get_sport_roll(void)
     remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.x) - roll_rate_bf/100.0; 
 
     // max rate for given distance (signed!)
-    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acclim_roll);
+    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acc_roll);
 
     // if the sign doesn't match, we've passed the target
     if(sign(max_rate) != sign(rate))
@@ -141,7 +136,7 @@ get_sport_pitch(void)
     remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.y) - pitch_rate_bf/100.0; 
 
     // max rate for given distance (signed!)
-    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acclim_pitch);
+    max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acc_pitch);
 
     // if the sign doesn't match, we've passed the target
     if(sign(max_rate) != sign(rate))
@@ -305,9 +300,9 @@ update_rate_contoller_targets()
     // now do body frame trajectory control:
 
     // limit acceleration to avoid unatainable error accumulation (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
-    roll_rate_bf  = constrain(roll_rate_target_bf,  roll_rate_bf-g.acro_acclim_roll,   roll_rate_bf+g.acro_acclim_roll);
-    pitch_rate_bf = constrain(pitch_rate_target_bf, pitch_rate_bf-g.acro_acclim_pitch, pitch_rate_bf+g.acro_acclim_pitch);
-    yaw_rate_bf   = constrain(yaw_rate_target_bf,   yaw_rate_bf-g.acro_acclim_yaw,     yaw_rate_bf+g.acro_acclim_yaw);
+    roll_rate_bf  = constrain(roll_rate_target_bf,  roll_rate_bf-g.acro_acc_roll,   roll_rate_bf+g.acro_acc_roll);
+    pitch_rate_bf = constrain(pitch_rate_target_bf, pitch_rate_bf-g.acro_acc_pitch, pitch_rate_bf+g.acro_acc_pitch);
+    yaw_rate_bf   = constrain(yaw_rate_target_bf,   yaw_rate_bf-g.acro_acc_yaw,     yaw_rate_bf+g.acro_acc_yaw);
 
     // adjust rate target with correction
     roll_rate_target_bf  = roll_rate_bf  + g.pid_stabilize_roll.get_p(error_bf.x)  + g.pid_stabilize_roll.get_i(error_bf.x, G_Dt)  + g.pid_stabilize_roll.get_d(error_bf.x, G_Dt);
@@ -322,12 +317,6 @@ update_rate_contoller_targets()
 #warning "these ~should~ be set to the 'right' value on a mode change or motor restart (i.e bring the throttle to zero in flight!)"
         roll_slew_rate_ef = 0;              pitch_slew_rate_ef = 0;             yaw_slew_rate_ef = 0;
     }
-
-    // Calculate target for next iteration
-    error_bf.x = constrain(error_bf.x + (roll_rate_bf * G_Dt),  -MAX_BF_ROLL_OVERSHOOT,  MAX_BF_ROLL_OVERSHOOT);
-    error_bf.y = constrain(error_bf.y + (pitch_rate_bf * G_Dt), -MAX_BF_PITCH_OVERSHOOT, MAX_BF_PITCH_OVERSHOOT);
-    error_bf.z = constrain(error_bf.z + (yaw_rate_bf * G_Dt),   -MAX_BF_YAW_OVERSHOOT,   MAX_BF_YAW_OVERSHOOT);
-
 }
 
 // run roll, pitch and yaw rate controllers and send output to motors

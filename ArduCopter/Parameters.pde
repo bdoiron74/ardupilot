@@ -519,53 +519,53 @@ const AP_Param::Info var_info[] PROGMEM = {
     // @User: Advanced
     GSCALAR(acro_balance_pitch,     "ACRO_BAL_PITCH",   ACRO_BALANCE_PITCH),
 
-    // @Param: ACRO_ACCLIM_R
+    // @Param: ACRO_ACC_ROLL
     // @DisplayName: Acro Roll Acceleration Limit
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(acro_acclim_roll,     "ACRO_ACCLIM_R",   ACRO_ACCLIM_R),
+    GSCALAR(acro_acc_roll,     "ACRO_ACC_ROLL",   ACRO_ACC_ROLL),
 
-    // @Param: ACRO_ACCLIM_P
+    // @Param: ACRO_ACC_PITCH
     // @DisplayName: Acro Pitch Acceleration Limit
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(acro_acclim_pitch,     "ACRO_ACCLIM_P",   ACRO_ACCLIM_P),
+    GSCALAR(acro_acc_pitch,     "ACRO_ACC_PITCH",   ACRO_ACC_PITCH),
 
-    // @Param: ACRO_ACCLIM_Y
+    // @Param: ACRO_ACC_YAW
     // @DisplayName: Acro Yaw Acceleration Limit
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(acro_acclim_yaw,     "ACRO_ACCLIM_Y",   ACRO_ACCLIM_Y),
+    GSCALAR(acro_acc_yaw,     "ACRO_ACC_YAW",   ACRO_ACC_YAW),
 
-    // @Param: STB_ACC_R
+    // @Param: STB_ACC_ROLL
     // @DisplayName: Stability Roll Acceleration 
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(stb_acc_roll,     "STB_ACC_R",   STB_ACC_R),
+    GSCALAR(stb_acc_roll,     "STB_ACC_ROLL",   STB_ACC_ROLL),
 
-    // @Param: STB_ACC_P
+    // @Param: STB_ACC_PITCH
     // @DisplayName: Stability Pitch Acceleration 
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(stb_acc_pitch,     "STB_ACC_P",   STB_ACC_P),
+    GSCALAR(stb_acc_pitch,     "STB_ACC_PITCH",   STB_ACC_PITCH),
 
-    // @Param: STB_ACC_Y
+    // @Param: STB_ACC_YAW
     // @DisplayName: Stability Yaw Acceleration 
     // @Description: cdeg/second/sample
     // @Range: 
     // @Increment: 1
     // @User: Advanced
-    GSCALAR(stb_acc_yaw,     "STB_ACC_Y",   STB_ACC_Y),
+    GSCALAR(stb_acc_yaw,     "STB_ACC_YAW",   STB_ACC_YAW),
 
     // @Param: STB_MAX_RATE
     // @DisplayName: Stability Max Rate 

@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Apr-7"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Apr-11"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -593,6 +593,15 @@ static int32_t roll_rate_target_bf = 0;     // body frame roll rate target
 static int32_t pitch_rate_target_bf = 0;    // body frame pitch rate target
 static int32_t yaw_rate_target_bf = 0;      // body frame yaw rate target
 
+// Used to control Axis lock
+Vector3f error_bf; // x=roll, y=pitch, z=yaw
+Vector3f target_ef;
+
+// for bodyframe acceleration limiting
+int32_t roll_rate_bf;
+int32_t pitch_rate_bf;
+int32_t yaw_rate_bf;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Throttle variables
 ////////////////////////////////////////////////////////////////////////////////
@@ -600,15 +609,6 @@ static int16_t throttle_accel_target_ef;    // earth frame throttle acceleration
 static bool throttle_accel_controller_active;   // true when accel based throttle controller is active, false when higher level throttle controllers are providing throttle output directly
 static float throttle_avg;                  // g.throttle_cruise as a float
 static int16_t desired_climb_rate;          // pilot desired climb rate - for logging purposes only
-
-
-////////////////////////////////////////////////////////////////////////////////
-// ACRO Mode
-////////////////////////////////////////////////////////////////////////////////
-// Used to control Axis lock
-Vector3f error_bf; // x=roll, y=pitch, z=yaw
-Vector3f target_ef;
-
 
 // Filters
 AP_LeadFilter xLeadFilter;      // Long GPS lag filter
@@ -1987,29 +1987,51 @@ static void read_AHRS(void)
 
 static void update_trig(void){
     Vector2f yawvector;
-    Matrix3f temp   = ahrs.get_dcm_matrix();
+    Matrix3f dcm_ef = ahrs.get_dcm_matrix();
 
-// body frame stabilization code - moved here so dcm_matrix is where we should be for trig angles.
+/////////////////////////
+// body frame stabilization code - moved here to adjust ahrs matirx to where we should be for trig angles.
+#warning "may want actual current angles for a few calculations (throttle boost?)"
   float dt = ins.get_delta_time();
 
-  error_bf = error_bf - ((omega * DEGX100) * dt);
+  // update error from last iteration
+  error_bf += ((Vector3f(roll_rate_bf, pitch_rate_bf, yaw_rate_bf) - (omega*DEGX100)) * dt);
 
-  // calculate target rotation so stabilized modes see where we 'will' be
-  //Matrix3f temp = ahrs.get_dcm_matrix();
-  temp.rotate(error_bf * RADX100);
-  temp.to_euler(&target_ef.x, &target_ef.y, &target_ef.z);
+  // rotate the leftover r/p error back a sample
+  if(1)
+  {
+    // copied from update_simple, 
+    float zcosx = sin(radians(90) - (omega.z*dt));
+    float zsiny = cos(radians(90) - (omega.z*dt));
+    float ex =   error_bf.x * zcosx + error_bf.y * zsiny;
+    float ey = -(error_bf.x * zsiny - error_bf.y * zcosx);
+    error_bf.x = ex;
+    error_bf.y = ey;
+  }
+
+  // limit error
+  error_bf.x = constrain(error_bf.x,  -MAX_BF_ROLL_OVERSHOOT,  MAX_BF_ROLL_OVERSHOOT);
+  error_bf.y = constrain(error_bf.y, -MAX_BF_PITCH_OVERSHOOT, MAX_BF_PITCH_OVERSHOOT);
+  error_bf.z = constrain(error_bf.z,   -MAX_BF_YAW_OVERSHOOT,   MAX_BF_YAW_OVERSHOOT);
+
   
+  // calculate target rotation so stabilized modes see where we 'will' be
+  dcm_ef.rotate(error_bf * RADX100);
+  dcm_ef.to_euler(&target_ef.x, &target_ef.y, &target_ef.z);
+  
+  //convert to centideg
   target_ef *= DEGX100;
+  // heading = 0-359
   if(target_ef.z < 0) target_ef.z += 36000;
 /////////////////
 
 
-    yawvector.x     = temp.a.x;     // sin
-    yawvector.y     = temp.b.x;         // cos
+    yawvector.x     = dcm_ef.a.x;     // sin
+    yawvector.y     = dcm_ef.b.x;         // cos
     yawvector.normalize();
 
-    cos_pitch_x     = safe_sqrt(1 - (temp.c.x * temp.c.x));     // level = 1
-    cos_roll_x          = temp.c.z / cos_pitch_x;                       // level = 1
+    cos_pitch_x     = safe_sqrt(1 - (dcm_ef.c.x * dcm_ef.c.x));     // level = 1
+    cos_roll_x          = dcm_ef.c.z / cos_pitch_x;                       // level = 1
 
     cos_pitch_x = constrain(cos_pitch_x, 0, 1.0);
     // this relies on constrain() of infinity doing the right thing,
@@ -2020,8 +2042,8 @@ static void update_trig(void){
     cos_yaw_x               = yawvector.y;                                              // 0x = north
 
     // added to convert earth frame to body frame for rate controllers
-    sin_pitch = -temp.c.x;
-    sin_roll = temp.c.y / cos_pitch_x;
+    sin_pitch = -dcm_ef.c.x;
+    sin_roll = dcm_ef.c.y / cos_pitch_x;
 
     //flat:
     // 0 ° = cos_yaw:  0.00, sin_yaw:  1.00,
