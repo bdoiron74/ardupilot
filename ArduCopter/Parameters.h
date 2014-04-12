@@ -241,6 +241,7 @@ public:
         k_param_stb_acc_pitch,
         k_param_stb_acc_yaw, 
         k_param_stb_max_rate, // 248
+        k_param_sport_angle_max, // 249
 
         // 254,255: reserved
     };
@@ -370,6 +371,7 @@ public:
     AP_Int16                stb_acc_pitch;
     AP_Int16                stb_acc_yaw;
     AP_Int16                stb_max_rate;
+    AP_Int16                sport_angle_max;
 
     // PI/D controllers
     AC_PID                  pid_rate_roll;

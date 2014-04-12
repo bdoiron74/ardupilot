@@ -92,8 +92,6 @@ get_stabilize_yaw(int32_t target_angle)
 
 #define sign(x) ((x)<0 ? -1 : 1)
 
-#define SPORT_LIMIT 4500.0
-
 static void
 get_sport_roll(void)
 {
@@ -104,7 +102,7 @@ get_sport_roll(void)
     int32_t rate = g.acro_p * g.rc_1.control_in;
 
     // error from here to limit
-    remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.x) - roll_rate_bf/100.0; 
+    remaining = fwrap_180cd(((float)g.sport_angle_max*sign(rate))-target_ef.x) - roll_rate_bf/100.0; 
 
     // max rate for given distance (signed!)
     max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acc_roll);
@@ -133,7 +131,7 @@ get_sport_pitch(void)
     int32_t rate = g.acro_p * g.rc_2.control_in;
 
     // error from here to limit
-    remaining = fwrap_180cd(sign(rate)*SPORT_LIMIT-target_ef.y) - pitch_rate_bf/100.0; 
+    remaining = fwrap_180cd(((float)g.sport_angle_max*sign(rate))-target_ef.y) - pitch_rate_bf/100.0; 
 
     // max rate for given distance (signed!)
     max_rate = get_max_rate(remaining, g.acro_p * 45, g.acro_acc_pitch);

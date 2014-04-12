@@ -575,6 +575,13 @@ const AP_Param::Info var_info[] PROGMEM = {
     // @User: Advanced
     GSCALAR(stb_max_rate,     "STB_MAX_RATE",   STB_MAX_RATE),
 
+    // @Param: SPORT_ANGLE_MAX
+    // @DisplayName: Stability Max Rate 
+    // @Description: deg/second
+    // @Range: 
+    // @Increment: 1
+    // @User: Advanced
+    GSCALAR(sport_angle_max,     "SPORT_ANGLE_MAX",   SPORT_ANGLE_MAX),
 
     // @Param: LED_MODE
     // @DisplayName: Copter LED Mode

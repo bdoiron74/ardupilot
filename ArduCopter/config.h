@@ -855,7 +855,9 @@
  #define STB_MAX_RATE			      500
 #endif
 
-
+#ifndef SPORT_ANGLE_MAX
+ #define SPORT_ANGLE_MAX			      4500
+#endif
 
 
 // Body Frame Acro mode values
