@@ -12,10 +12,6 @@ float fwrap_180cd(float error)
 	return error;
 }
 
-#warning "Battery sag compensation? would this mess with the motor curve (make it curved?)"
-
-#warning "TODO - Add sport mode (angle limited full rate control)"
-
 #define ACC_SOFTEN 500 // linear region = +/-5deg
 int32_t get_max_rate(float remaining, int16_t max_vel, int16_t acc) // cdeg, deg/s, deg/s/s
 {
@@ -38,7 +34,7 @@ static void get_stabilize_roll(int32_t target_angle)
     int32_t max_rate;
 #warning "TODO - Bypass to error gain when acc = 0"
 #warning "Think about reducing max rate (pull target a bit based on remaining distance to curve the decel side)"
-#warning "and get rid of the -roll_slew_rate_ef/100...)
+#warning "and get rid of the -roll_slew_rate_ef/100...)"
     // error from here to target, adjusted for rate change delay
     remaining = fwrap_180cd((float)target_angle-target_ef.x) - roll_slew_rate_ef/100.0;
 
@@ -322,6 +318,16 @@ update_rate_contoller_targets()
 void
 run_rate_controllers()
 {
+
+    if(g.battery_monitoring == 3 || g.battery_monitoring == 4) {
+      static AP_AnalogSource_Arduino batt_volt_pin(g.battery_volt_pin);
+      batt_volt_pin.set_pin(g.battery_volt_pin);
+      battery_voltage1 = BATTERY_VOLTAGE(batt_volt_pin.read_average());
+    }
+
+    // hack to feed in battery voltage in to motor matrix
+    motors.battery_voltage = battery_voltage1;
+
 #if FRAME_CONFIG == HELI_FRAME          // helicopters only use rate controllers for yaw and only when not using an external gyro
     if(!motors.ext_gyro_enabled) {
 		g.rc_1.servo_out = get_heli_rate_roll(roll_rate_target_bf);

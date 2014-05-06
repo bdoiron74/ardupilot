@@ -117,9 +117,10 @@ static void read_battery(void)
     }
 
     if(g.battery_monitoring == 3 || g.battery_monitoring == 4) {
-        static AP_AnalogSource_Arduino batt_volt_pin(g.battery_volt_pin);
-        batt_volt_pin.set_pin(g.battery_volt_pin);
-        battery_voltage1 = BATTERY_VOLTAGE(batt_volt_pin.read_average());
+      // moved to 100hz loop
+      //  static AP_AnalogSource_Arduino batt_volt_pin(g.battery_volt_pin);
+      //  batt_volt_pin.set_pin(g.battery_volt_pin);
+      //  battery_voltage1 = BATTERY_VOLTAGE(batt_volt_pin.read_average());
     }
     if(g.battery_monitoring == 4) {
         static AP_AnalogSource_Arduino batt_curr_pin(g.battery_curr_pin);

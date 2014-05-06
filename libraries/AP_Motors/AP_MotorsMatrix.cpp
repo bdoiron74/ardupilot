@@ -255,7 +255,25 @@ void AP_MotorsMatrix::output_armed()
             }
         }
 
-        // throttle booster, experimental. Try to get motors to the desired rpm faster
+        // voltage scaling. Since the limiting has already been performed, this should not boost any signals.
+        // it ~can~ if the target voltage is higher than the battery voltage, which could lead to instability, so don't do that. 
+        if((battery_voltage > 5.0) && (_voltage_target > 5.0))
+        {
+          static float factor = 1.0;
+          
+          factor = (factor * (1.0-_voltage_tc)) + (sqrt(_voltage_target / battery_voltage)*_voltage_tc);
+          factor = constrain(factor, 0.85, 1.15);
+
+          for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) 
+          {
+            if( motor_enabled[i] ) 
+            {
+              motor_out[i] = motor_out[i] * factor;
+            }
+          }
+        }
+
+        // throttle booster, experimental. Try to get motors to the desired rpm faster by using the full battery voltage
         if(_throttle_boost_kb != 0)
         {
           for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {

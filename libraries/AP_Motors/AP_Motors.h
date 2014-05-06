@@ -53,6 +53,7 @@
 #define THROTTLE_BOOST_KA   1.0  
 #define THROTTLE_BOOST_KB   0.0  
 #define THROTTLE_BOOST_LIM  0  
+#define THROTTLE_VTARGET    10.0
 
 
 // bit mask for recording which limits we have reached when outputting to motors
@@ -158,6 +159,7 @@ public:
 
     // final output values sent to the motors.  public (for now) so that they can be access for logging
     int16_t             motor_out[AP_MOTORS_MAX_NUM_MOTORS];
+    float               battery_voltage; // hack to feed the battery voltage in for scaling
 
     // power ratio of upper vs lower motors (only used by y6 and octa quad copters)
     AP_Float            top_bottom_ratio;
@@ -190,6 +192,8 @@ protected:
     AP_Float            _throttle_boost_ka;    // motor time constant (0.01 = very slow, 1 = instant response)
     AP_Float            _throttle_boost_kb;    // boost factor, multiplied by the difference between the normalized motor speed estimate (based on ka) and the requested throttle
     AP_Int16            _throttle_boost_limit; // max boost/cut to apply to the commanded throttle
+    AP_Float            _voltage_target;       // used to scale control values to changing battery voltages
+    AP_Float            _voltage_tc;           // filter constant used when scaling control values to changing battery voltages
     int16_t             _motor_v_estimate[AP_MOTORS_MAX_NUM_MOTORS];
 };
 

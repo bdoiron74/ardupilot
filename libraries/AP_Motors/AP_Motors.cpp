@@ -53,6 +53,18 @@ const AP_Param::GroupInfo AP_Motors::var_info[] PROGMEM = {
     // @Range: 0 - 1000
     AP_GROUPINFO("TBST_LIM", 6, AP_Motors, _throttle_boost_limit, THROTTLE_BOOST_LIM),
 
+    // @Param: VTARGET
+    // @DisplayName: 
+    // @Description: Target battery voltage in V
+    // @Range: 
+    AP_GROUPINFO("VTARGET", 7, AP_Motors, _voltage_target, THROTTLE_VTARGET),
+
+    // @Param: VTARGTC
+    // @DisplayName: 
+    // @Description: fact = (1.0-VTARGTC)*old + VTARGTC*new
+    // @Range: 
+    AP_GROUPINFO("VTARGTC", 8, AP_Motors, _voltage_tc, 0.01),
+
     AP_GROUPEND
 };
 
@@ -129,7 +141,7 @@ bool AP_Motors::setup_throttle_curve()
         retval &= _throttle_curve.add_point(mid_throttle_pwm, mid_thrust_pwm);
         retval &= _throttle_curve.add_point(max_pwm, max_thrust_pwm);
 #else // HACK to linearize thrust
-#warning "Make parameters for some number of segments. This one just happens to be linear. 
+#warning "Make parameters for some number of segments. This one just happens to be linear."
                                                                                                //  mot,  PWM
         retval &= _throttle_curve.add_point(_rc_throttle->radio_min,               _rc_throttle->radio_min);
         retval &= _throttle_curve.add_point(_rc_throttle->radio_min+_min_throttle, _rc_throttle->radio_min+((int16_t)_throttle_curve_mid)*10); 
