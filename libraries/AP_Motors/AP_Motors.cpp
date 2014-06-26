@@ -97,6 +97,10 @@ AP_Motors::AP_Motors( uint8_t APM_version, APM_RC_Class* rc_out, RC_Channel* rc_
     for(i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++) {
         motor_out[i] = 0;
     }
+
+    _mstate = S_STOPPED;
+    _mstate_counter = 0;
+    _mssb = 1;
 };
 
 // init
@@ -110,8 +114,20 @@ void AP_Motors::Init()
 void AP_Motors::throttle_pass_through()
 {
     if( armed() ) {
-        for( int16_t i=0; i < AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
+        for( int16_t i=0; i < AP_MOTORS_MAX_NUM_MOTORS; i++ ) 
+        {
+//          if(ap.failsafe)
+//          {
+//#if ESC3D == ENABLED
+//            _rc->OutputCh(_motor_to_channel_map[i], _rc_throttle->radio_trim);
+//#else
+//            _rc->OutputCh(_motor_to_channel_map[i], _rc_throttle->radio_min);
+//#endif
+//          }
+//          else
+          {
             _rc->OutputCh(_motor_to_channel_map[i], _rc_throttle->radio_in);
+          }
         }
     }
 }
@@ -142,10 +158,17 @@ bool AP_Motors::setup_throttle_curve()
         retval &= _throttle_curve.add_point(max_pwm, max_thrust_pwm);
 #else // HACK to linearize thrust
 #warning "Make parameters for some number of segments. This one just happens to be linear."
-                                                                                               //  mot,  PWM
+        // currently mapping _min_throttle [as %*10] to _throttle_curve_mid [as min_pwm]
+#if ESC3D == ENABLED
+        retval &= _throttle_curve.add_point(0,                  0);
+        retval &= _throttle_curve.add_point(_min_throttle,      ((int16_t)_throttle_curve_mid)*10);  // SimonK has 1/16 dz at the bottom, but we might want to leave room
+        retval &= _throttle_curve.add_point(1000,               969); // SimonK has 1/32 dz at the top
+#else
+                                            //  mot,  PWM
         retval &= _throttle_curve.add_point(_rc_throttle->radio_min,               _rc_throttle->radio_min);
         retval &= _throttle_curve.add_point(_rc_throttle->radio_min+_min_throttle, _rc_throttle->radio_min+((int16_t)_throttle_curve_mid)*10); 
         retval &= _throttle_curve.add_point(_rc_throttle->radio_max,               _rc_throttle->radio_max);     
+#endif
 #endif
 
         // return success

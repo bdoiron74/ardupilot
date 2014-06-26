@@ -270,8 +270,12 @@ static void run_navigation_contollers()
         break;
 
     case STABILIZE:
+#ifdef TOY_A
     case TOY_A:
+#endif
+#ifdef TOY_M
     case TOY_M:
+#endif
         wp_control = NO_NAV_MODE;
         update_nav_wp();
         break;

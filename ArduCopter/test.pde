@@ -128,7 +128,7 @@ test_radio_pwm(uint8_t argc, const Menu::arg *argv)
     delay(1000);
 
     while(1) {
-        delay(20);
+        delay(300);
 
         // Filters radio input - adjust filters in the radio.pde file
         // ----------------------------------------------------------
@@ -137,7 +137,7 @@ test_radio_pwm(uint8_t argc, const Menu::arg *argv)
         // servo Yaw
         //APM_RC.OutputCh(CH_7, g.rc_4.radio_out);
 
-        cliSerial->printf_P(PSTR("IN: 1: %d\t2: %d\t3: %d\t4: %d\t5: %d\t6: %d\t7: %d\t8: %d\n"),
+        cliSerial->printf_P(PSTR("RIN: 1[%5d] 2[%5d] 3[%5d] 4[%5d] 5[%5d] 6[%5d] 7[%5d] 8[%5d]\n"),
                         g.rc_1.radio_in,
                         g.rc_2.radio_in,
                         g.rc_3.radio_in,
@@ -146,6 +146,27 @@ test_radio_pwm(uint8_t argc, const Menu::arg *argv)
                         g.rc_6.radio_in,
                         g.rc_7.radio_in,
                         g.rc_8.radio_in);
+
+        cliSerial->printf_P(PSTR("CIN: 1[%+5d] 2[%+5d] 3[%+5d] 4[%+5d] 5[%+5d] 6[%+5d] 7[%+5d] 8[%+5d], FS%d\n"),
+                        g.rc_1.control_in,
+                        g.rc_2.control_in,
+                        g.rc_3.control_in,
+                        g.rc_4.control_in,
+                        g.rc_5.control_in,
+                        g.rc_6.control_in,
+                        g.rc_7.control_in,
+                        g.rc_8.control_in, ap.failsafe);
+
+        int16_t d = get_pilot_desired_throttle();
+        set_throttle_out(d, false);
+        int16_t mo = abs(g.rc_3.servo_out);
+        int16_t mc = motors._throttle_curve.get_y(mo);
+        int16_t mr = g.rc_3.range_to_radio_out(mc*sign(g.rc_3.servo_out));
+        int16_t ac = arm_motors();
+        cliSerial->printf_P(PSTR("d = %+5d, so = %+5d, mo = %+5d, mc = %+5d, mr = %+5d, tr=%+5d, ac=%+5d\n"), 
+                        d, g.rc_3.servo_out, mo, mc, mr, g.rc_3.trim_range, ac
+                       );
+
 
         if(cliSerial->available() > 0) {
             return (0);

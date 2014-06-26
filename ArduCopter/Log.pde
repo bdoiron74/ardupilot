@@ -346,7 +346,7 @@ static void Log_Read_Raw()
 }
 
 
-// Write an Current data packet. Total length : 16 bytes
+// Write a Current data packet. Total length : 16 bytes
 static void Log_Write_Current()
 {
     DataFlash.WriteByte(HEAD_BYTE1);

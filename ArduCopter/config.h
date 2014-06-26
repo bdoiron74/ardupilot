@@ -1162,8 +1162,14 @@
 
 // Enable/disable AP_Limits
 #ifndef AP_LIMITS
- #define AP_LIMITS ENABLED
+ #define AP_LIMITS DISABLED
 #endif
+
+// Enable/disable reversible Esc support
+#ifndef ESC3D
+  #define ESC3D ENABLED
+#endif
+
 
 // Use PIN for displaying LIMITS status. 0 is disabled.
 #ifndef LIMITS_TRIGGERED_PIN

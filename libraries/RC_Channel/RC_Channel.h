@@ -71,6 +71,9 @@ public:
     // generate PWM from servo_out value
     void        calc_pwm(void);
 
+    // convert scaled range into radio_out
+    int16_t     range_to_radio_out(int16_t range);
+
     // PWM is without the offset from radio_min
     int16_t         pwm_out;
     int16_t         radio_out;

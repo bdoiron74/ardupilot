@@ -18,7 +18,7 @@
 
 #include "AP_Loop.h"
 
-Loop::Loop(float _frequency, void (*fptr)(void *), void * data) :
+AP_Loop::AP_Loop(float _frequency, void (*fptr)(void *), void * data) :
     _fptr(fptr),
     _data(data),
     _period(1.0e6/_frequency),
@@ -29,7 +29,7 @@ Loop::Loop(float _frequency, void (*fptr)(void *), void * data) :
 {
 }
 
-void Loop::update()
+void AP_Loop::update()
 {
     // quick exit if not ready
     if (micros() - _timeStamp < _period) return;

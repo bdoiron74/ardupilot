@@ -394,7 +394,15 @@ static void set_mode(byte mode)
 {
     // Switch to stabilize mode if requested mode requires a GPS lock
     if(!ap.home_is_set) {
-        if (mode > ALT_HOLD && mode != TOY_A && mode != TOY_M && mode != OF_LOITER && mode != LAND) {
+        if (mode > ALT_HOLD && 
+#ifdef TOY_A
+            mode != TOY_A && 
+#endif
+#ifdef TOY_M
+            mode != TOY_M && 
+#endif
+            mode != SPORT && 
+            mode != OF_LOITER && mode != LAND) {
             mode = STABILIZE;
         }
     }
@@ -409,8 +417,8 @@ static void set_mode(byte mode)
 
     // used to stop fly_aways
     // set to false if we have low throttle
-    motors.auto_armed(g.rc_3.control_in > 0 || ap.failsafe);
-    set_auto_armed(g.rc_3.control_in > 0 || ap.failsafe);
+    motors.auto_armed(g.rc_3.control_in != 0 || ap.failsafe);
+    set_auto_armed(g.rc_3.control_in != 0 || ap.failsafe);
 
     // if we change modes, we must clear landed flag
     set_land_complete(false);
@@ -546,6 +554,7 @@ static void set_mode(byte mode)
         set_next_WP(&current_loc);
         break;
 
+#ifdef TOY_A
     // THOR
     // These are the flight modes for Toy mode
     // See the defines for the enumerated values
@@ -561,7 +570,8 @@ static void set_mode(byte mode)
         saved_toy_throttle = g.rc_3.control_in;
 
         break;
-
+#endif
+#ifdef TOY_M
     case TOY_M:
     	ap.manual_throttle = false;
     	ap.manual_attitude = true;
@@ -570,7 +580,7 @@ static void set_mode(byte mode)
         wp_control          = NO_NAV_MODE;
         set_throttle_mode(THROTTLE_HOLD);
         break;
-
+#endif
     default:
         break;
     }
@@ -725,12 +735,16 @@ print_flight_mode(uint8_t mode)
     case OF_LOITER:
         cliSerial->print_P(PSTR("OF_LOITER"));
         break;
+#ifdef TOY_M
     case TOY_M:
         cliSerial->print_P(PSTR("TOY_M"));
         break;
+#endif
+#ifdef TOY_A
     case TOY_A:
         cliSerial->print_P(PSTR("TOY_A"));
         break;
+#endif
     default:
         cliSerial->print_P(PSTR("---"));
         break;

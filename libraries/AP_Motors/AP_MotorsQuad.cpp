@@ -33,10 +33,10 @@ void AP_MotorsQuad::setup_motors()
         // hack - using V_FRAME as V_TAIL (1=NE, 2=SE, 3=SW, 4=NW)
                                     // T,     R,    P,    Y    Test order
 #if 0 // inverted rear motors
-        add_motor_raw(AP_MOTORS_MOT_1, 0.95, -0.7,  0.7, -0.23,  1);
+        add_motor_raw(AP_MOTORS_MOT_1, 1.0, -0.7,  0.7, -0.23,  1);
         add_motor_raw(AP_MOTORS_MOT_2, 1.0,   0.0, -0.7,  0.7,  2);
         add_motor_raw(AP_MOTORS_MOT_3, 1.0,   0.0, -0.7, -0.7,  3);
-        add_motor_raw(AP_MOTORS_MOT_4, 0.95,  0.7,  0.7,  0.23,  4);
+        add_motor_raw(AP_MOTORS_MOT_4, 1.0,  0.7,  0.7,  0.23,  4);
 #else
         add_motor_raw(AP_MOTORS_MOT_1, 1.00, -0.7,  0.70,  0.35,  1);
         add_motor_raw(AP_MOTORS_MOT_2, 1.00,  0.0, -0.70, -0.70,  2);

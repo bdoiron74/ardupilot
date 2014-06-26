@@ -74,7 +74,7 @@ static void init_rc_out()
     }
 
     // we want the input to be scaled correctly
-    g.rc_3.set_range_out(0,1000);
+    g.rc_3.set_range_out(0,1000); // for ESC3D, this is considered 1 half trim:max or trim:min...
 
     // sanity check - prevent unconfigured radios from outputting
     if(g.rc_3.radio_min >= 1300) {
@@ -143,7 +143,7 @@ static void read_radio()
 
 #if FRAME_CONFIG != HELI_FRAME
         // limit our input to 800 so we can still pitch and roll
-        g.rc_3.control_in = min(g.rc_3.control_in, MAXIMUM_THROTTLE);
+        g.rc_3.control_in = max(-MAXIMUM_THROTTLE, min(g.rc_3.control_in, MAXIMUM_THROTTLE));
 #endif
     }else{
         // turn on throttle failsafe if no update from ppm encoder for 2 seconds

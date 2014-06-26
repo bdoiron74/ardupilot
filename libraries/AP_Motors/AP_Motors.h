@@ -167,6 +167,12 @@ public:
     // var_info for holding Parameter information
     static const struct AP_Param::GroupInfo        var_info[];
 
+    AP_CurveInt16_Size4 _throttle_curve;                // curve used to linearize the pwm->thrust
+
+    virtual bool        stopped_starting_braking() {
+        return _mssb;
+    };
+
 protected:
 
     // output functions that should be overloaded by child classes
@@ -184,7 +190,6 @@ protected:
     uint8_t             _frame_orientation;     // PLUS_FRAME 0, X_FRAME 1, V_FRAME 2
     int16_t             _min_throttle;          // the minimum throttle to be sent to the engines when they're on (prevents issues with some motors on while other off at very low throttle)
     int16_t             _max_throttle;          // the minimum throttle to be sent to the engines when they're on (prevents issues with some motors on while other off at very low throttle)
-    AP_CurveInt16_Size4 _throttle_curve;                // curve used to linearize the pwm->thrust
     AP_Int8             _throttle_curve_enabled;        // enable throttle curve
     AP_Int8             _throttle_curve_mid;  // throttle which produces 1/2 the maximum thrust.  expressed as a percentage (i.e. 0 ~ 100 ) of the full throttle range
     AP_Int8             _throttle_curve_max;  // throttle which produces the maximum thrust.  expressed as a percentage (i.e. 0 ~ 100 ) of the full throttle range
@@ -195,6 +200,19 @@ protected:
     AP_Float            _voltage_target;       // used to scale control values to changing battery voltages
     AP_Float            _voltage_tc;           // filter constant used when scaling control values to changing battery voltages
     int16_t             _motor_v_estimate[AP_MOTORS_MAX_NUM_MOTORS];
+
+    uint8_t             _mstate;
+    bool                _mssb;
+    int8_t              _mstate_counter;
 };
+
+#define S_STOPPED   0
+#define S_BRK       1
+
+#define S_FWD_START 2
+#define S_FWD       3
+
+#define S_REV_START 4
+#define S_REV       5
 
 #endif  // AP_MOTORS

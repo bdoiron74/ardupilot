@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob 2014-Apr-29"
+#define THISFIRMWARE "ArduCopter V2.9.1b-Bob3D 2014-Jun-19"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -146,7 +146,7 @@ FastSerialPort1(Serial1);       // GPS port
 FastSerialPort3(Serial3);       // Telemetry port
 
 // port to use for command line interface
-static FastSerial *cliSerial = &Serial;
+FastSerial *cliSerial = &Serial;
 
 // this sets up the parameter table, and sets the default values. This
 // must be the first AP_Param variable declared to ensure its
@@ -1107,7 +1107,7 @@ static void medium_loop()
 
         // record throttle output
         // ------------------------------
-        throttle_integrator += g.rc_3.servo_out;
+        throttle_integrator += abs(g.rc_3.servo_out); // abs for reversible throttle
         break;
 
     // This case performs some navigation computations
@@ -1122,6 +1122,7 @@ static void medium_loop()
     case 2:
         medium_loopCounter++;
 
+#ifdef TOY_A
         if(control_mode == TOY_A) {
             update_toy_throttle();
 
@@ -1129,6 +1130,7 @@ static void medium_loop()
                 update_toy_altitude();
             }
         }
+#endif
 
         ap_system.alt_sensor_flag = true;
         break;
@@ -1255,7 +1257,7 @@ static void slow_loop()
 {
 
 #if AP_LIMITS == ENABLED
-
+xx
     // Run the AP_Limits main loop
     limits_loop();
 
@@ -1346,7 +1348,7 @@ static void super_slow_loop()
 
     // this function disarms the copter if it has been sitting on the ground for any moment of time greater than 25 seconds
     // but only of the control mode is manual
-    if((control_mode <= ACRO) && (g.rc_3.control_in == 0)) {
+    if((control_mode <= ACRO) && (g.rc_3.control_in == 0) && motors.armed()) {
         auto_disarming_counter++;
 
         if(auto_disarming_counter == AUTO_DISARMING_DELAY) {
@@ -1786,6 +1788,7 @@ bool set_throttle_mode( uint8_t new_throttle_mode )
             set_new_altitude(current_loc.alt);          // by default hold the current altitude
             if ( throttle_mode <= THROTTLE_MANUAL_TILT_COMPENSATED ) {      // reset the alt hold I terms if previous throttle mode was manual
                 reset_throttle_I();
+#warning "this could be ugly if throttle is negative!"
                 set_accel_throttle_I_from_pilot_throttle(get_pilot_desired_throttle());
             }
             throttle_initialised = true;
@@ -1847,7 +1850,7 @@ void update_throttle_mode(void)
 
     case THROTTLE_MANUAL:
         // completely manual throttle
-        if(g.rc_3.control_in <= 0){
+        if(g.rc_3.control_in == 0){
             set_throttle_out(0, false);
         }else{
             // send pilot's output directly to motors
@@ -1874,7 +1877,7 @@ void update_throttle_mode(void)
 
     case THROTTLE_MANUAL_TILT_COMPENSATED:
         // manual throttle but with angle boost
-        if (g.rc_3.control_in <= 0) {
+        if (g.rc_3.control_in == 0) {
             set_throttle_out(0, false); // no need for angle boost with zero throttle
         }else{
             pilot_throttle_scaled = get_pilot_desired_throttle();
@@ -1897,8 +1900,9 @@ void update_throttle_mode(void)
         break;
 
     case THROTTLE_ACCELERATION:
+#warning "assumes 0-1000 throttle input for now: avoid sending -ve values with the TX in this mode"
         // pilot inputs the desired acceleration
-        if(g.rc_3.control_in <= 0){
+        if(g.rc_3.control_in == 0){
             set_throttle_out(0, false);
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
         }else{
@@ -1909,7 +1913,7 @@ void update_throttle_mode(void)
 
     case THROTTLE_RATE:
         // pilot inputs the desired climb rate.  Note this is the unstabilized rate controller
-        if(g.rc_3.control_in <= 0){
+        if(g.rc_3.control_in == 0){
             set_throttle_out(0, false);
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
         }else{
@@ -1920,7 +1924,7 @@ void update_throttle_mode(void)
 
     case THROTTLE_STABILIZED_RATE:
         // pilot inputs the desired climb rate.  Note this is the stabilized rate controller
-        if(g.rc_3.control_in <= 0){
+        if(g.rc_3.control_in == 0){
             set_throttle_out(0, false);
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
             altitude_error = 0;             // clear altitude error reported to GCS - normally underlying alt hold controller updates altitude error reported to GCS
@@ -1931,8 +1935,9 @@ void update_throttle_mode(void)
         break;
 
     case THROTTLE_DIRECT_ALT:
+#warning "assumes 0-1000 throttle input for now: avoid sending -ve values with the TX in this mode"
         // pilot inputs a desired altitude from 0 ~ 10 meters
-        if(g.rc_3.control_in <= 0){
+        if(g.rc_3.control_in == 0){
             set_throttle_out(0, false);
             throttle_accel_deactivate();    // do not allow the accel based throttle to override our command
             altitude_error = 0;             // clear altitude error reported to GCS - normally underlying alt hold controller updates altitude error reported to GCS

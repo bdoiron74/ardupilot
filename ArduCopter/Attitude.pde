@@ -86,8 +86,6 @@ get_stabilize_yaw(int32_t target_angle)
     set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
-#define sign(x) ((x)<0 ? -1 : 1)
-
 static void
 get_sport_roll(void)
 {
@@ -198,8 +196,14 @@ get_acro_roll()
     float lf = CalcLevelMix() * (g.acro_balance_roll/100.0);
     int32_t limit = CalcLimit(roll_rate, lf * g.acro_p * 4500);
     
+    // calculate level target distance (0 for +ve throttle, 180 for -ve throttle)
+    int32_t level;
+    if(g.rc_3.servo_out > 0) { level = -target_ef.x; }
+    else if(g.rc_3.servo_out < 0) { level = wrap_180(18000 - target_ef.x); }
+    else { level = 0; }
+
     // Calculate level rate for blending (similar to MultiWiii horizon mode), ignore roll level as we approach pitch +-90 (cos_pitch_x)
-    int32_t level_rate = g.acro_p * constrain(-target_ef.x, -4500, 4500) * lf * cos_pitch_x;
+    int32_t level_rate = g.acro_p * constrain(level, -4500, 4500) * lf * cos_pitch_x;
 
     // combine/limit rate
     roll_rate = constrain((roll_rate + level_rate), -limit, limit);
@@ -222,7 +226,7 @@ get_acro_pitch()
     int32_t limit = CalcLimit(pitch_rate, lf * g.acro_p * 4500);
 
     // Calculate level rate for blending (similar to MultiWiii horizon mode)
-    int32_t level_rate = g.acro_p * constrain(-target_ef.y, -4500, 4500) * lf;
+    int32_t level_rate = g.acro_p * constrain(((g.rc_3.servo_out == 0) ? 0 : -target_ef.y), -4500, 4500) * lf;
 
     // when leveling (acro < max_level), maintain heading by splitting between pitch/yaw
     if(labs(pitch_rate) < (g.acro_p * 4500 * lf) ) 
@@ -284,32 +288,38 @@ void set_yaw_rate_target( int32_t desired_rate, uint8_t earth_or_body_frame ) {
 void
 update_rate_contoller_targets()
 {
-    if( rate_targets_frame == EARTH_FRAME ) {
-        // convert earth frame rates to body frame rates
-        roll_rate_target_bf 	= roll_rate_target_ef - sin_pitch * yaw_rate_target_ef;
-        pitch_rate_target_bf 	= cos_roll_x  * pitch_rate_target_ef + sin_roll * cos_pitch_x * yaw_rate_target_ef;
-        yaw_rate_target_bf 		= cos_pitch_x * cos_roll_x * yaw_rate_target_ef - sin_roll * pitch_rate_target_ef;
-    }
-
-    // now do body frame trajectory control:
-
-    // limit acceleration to avoid unatainable error accumulation (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
-    roll_rate_bf  = constrain(roll_rate_target_bf,  roll_rate_bf-g.acro_acc_roll,   roll_rate_bf+g.acro_acc_roll);
-    pitch_rate_bf = constrain(pitch_rate_target_bf, pitch_rate_bf-g.acro_acc_pitch, pitch_rate_bf+g.acro_acc_pitch);
-    yaw_rate_bf   = constrain(yaw_rate_target_bf,   yaw_rate_bf-g.acro_acc_yaw,     yaw_rate_bf+g.acro_acc_yaw);
-
-    // adjust rate target with correction
-    roll_rate_target_bf  = roll_rate_bf  + g.pid_stabilize_roll.get_p(error_bf.x)  + g.pid_stabilize_roll.get_i(error_bf.x, G_Dt)  + g.pid_stabilize_roll.get_d(error_bf.x, G_Dt);
-    pitch_rate_target_bf = pitch_rate_bf + g.pid_stabilize_pitch.get_p(error_bf.y) + g.pid_stabilize_pitch.get_i(error_bf.y, G_Dt) + g.pid_stabilize_pitch.get_d(error_bf.y, G_Dt);
-    yaw_rate_target_bf   = yaw_rate_bf   + g.pid_stabilize_yaw.get_p(error_bf.z)   + g.pid_stabilize_yaw.get_i(error_bf.z, G_Dt)   + g.pid_stabilize_yaw.get_d(error_bf.z, G_Dt);
-
-    if (motors.armed() == false || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
-        error_bf.x = 0;          error_bf.y = 0;           error_bf.z = 0;
-        roll_rate_bf = 0;        pitch_rate_bf = 0;        yaw_rate_bf = 0;
-        roll_rate_target_bf = 0; pitch_rate_target_bf = 0; yaw_rate_target_bf = 0;
-
+    if ((motors.armed() == false) || (motors.stopped_starting_braking() == true) || ((g.rc_3.control_in == 0) && !ap.failsafe)) {
+        error_bf.x = 0;          error_bf.y = 0;           error_bf.z = 0;        
+        // set to current rate
+        roll_rate_target_bf = roll_rate_bf = omega.x*DEGX100; 
+        pitch_rate_target_bf = pitch_rate_bf = omega.y*DEGX100; 
+        yaw_rate_target_bf = yaw_rate_bf = omega.z*DEGX100;
 #warning "these ~should~ be set to the 'right' value on a mode change or motor restart (i.e bring the throttle to zero in flight!)"
         roll_slew_rate_ef = 0;              pitch_slew_rate_ef = 0;             yaw_slew_rate_ef = 0;
+        
+        reset_rate_I();
+    }
+    else
+    {
+      if( rate_targets_frame == EARTH_FRAME ) 
+      {
+          // convert earth frame rates to body frame rates
+          roll_rate_target_bf 	= roll_rate_target_ef - sin_pitch * yaw_rate_target_ef;
+          pitch_rate_target_bf 	= cos_roll_x  * pitch_rate_target_ef + sin_roll * cos_pitch_x * yaw_rate_target_ef;
+          yaw_rate_target_bf 		= cos_pitch_x * cos_roll_x * yaw_rate_target_ef - sin_roll * pitch_rate_target_ef;
+      }
+
+      // now do body frame trajectory control:
+
+      // limit acceleration to avoid unatainable error accumulation (assuming perfect 100hz 100*deg/s/s*0.01 -> cd/s/sample)
+      roll_rate_bf  = constrain(roll_rate_target_bf,  roll_rate_bf-g.acro_acc_roll,   roll_rate_bf+g.acro_acc_roll);
+      pitch_rate_bf = constrain(pitch_rate_target_bf, pitch_rate_bf-g.acro_acc_pitch, pitch_rate_bf+g.acro_acc_pitch);
+      yaw_rate_bf   = constrain(yaw_rate_target_bf,   yaw_rate_bf-g.acro_acc_yaw,     yaw_rate_bf+g.acro_acc_yaw);
+
+      // adjust rate target with correction
+      roll_rate_target_bf  = roll_rate_bf  + g.pid_stabilize_roll.get_p(error_bf.x)  + g.pid_stabilize_roll.get_i(error_bf.x, G_Dt)  + g.pid_stabilize_roll.get_d(error_bf.x, G_Dt);
+      pitch_rate_target_bf = pitch_rate_bf + g.pid_stabilize_pitch.get_p(error_bf.y) + g.pid_stabilize_pitch.get_i(error_bf.y, G_Dt) + g.pid_stabilize_pitch.get_d(error_bf.y, G_Dt);
+      yaw_rate_target_bf   = yaw_rate_bf   + g.pid_stabilize_yaw.get_p(error_bf.z)   + g.pid_stabilize_yaw.get_i(error_bf.z, G_Dt)   + g.pid_stabilize_yaw.get_d(error_bf.z, G_Dt);
     }
 }
 
@@ -536,6 +546,7 @@ get_rate_roll(int32_t target_rate)
     output = p + i + d;
 
     // constrain output
+#warning "TODO: Why not use -4000:4000 and then >>3 in RC_Channel::calc_pwm?"
     output = constrain(output, -5000, 5000);
 
 #if LOGGING_ENABLED == ENABLED
@@ -579,6 +590,7 @@ get_rate_pitch(int32_t target_rate)
     output = p + i + d;
 
     // constrain output
+#warning "TODO: Why not use -4000:4000 and then >>3 in RC_Channel::calc_pwm?"
     output = constrain(output, -5000, 5000);
 
 #if LOGGING_ENABLED == ENABLED
@@ -617,6 +629,7 @@ get_rate_yaw(int32_t target_rate)
     d = g.pid_rate_yaw.get_d(rate_error, G_Dt);
 
     output  = p+i+d;
+#warning "TODO: Why not use -3600:3600 and then >>3 in RC_Channel::calc_pwm?"
     output = constrain(output, -4500, 4500);
 
 #if LOGGING_ENABLED == ENABLED
@@ -804,13 +817,15 @@ static int16_t get_angle_boost(int16_t throttle)
 // throttle value should be 0 ~ 1000
 static int16_t get_angle_boost(int16_t throttle)
 {
+#warning "Should angle boost be disabled or at least looked at for 3d?"
     float temp = cos_pitch_x * cos_roll_x;
     int16_t throttle_out;
+
+    if(throttle < 0) return throttle; // no angle boost when inverted. (shouldn't apply, but in case it ever does...)
 
     temp = constrain(temp, .5, 1.0);
 
     // reduce throttle if we go inverted
-#warning "plot this... and is it a good idea?"
     temp = constrain(9000-max(labs(ahrs.roll_sensor),labs(ahrs.pitch_sensor)), 0, 3000) / (3000 * temp);
 
     // apply scale and constrain throttle
@@ -912,15 +927,18 @@ get_throttle_accel(int16_t z_target_accel)
 // get_pilot_desired_throttle - transform pilot's throttle input to make cruise throttle mid stick
 // used only for manual throttle modes
 // returns throttle output [g.throttle_min to g.throttle_max]
+#warning "TODO: Consider adding a separate mid for negative"
 static int16_t get_pilot_desired_throttle()   
 {
-    int16_t throttle_control = g.rc_3.control_in; // 0:DZ,DZ+1:1000 => 0:0,g.throttle_min:g.throttle_max
+    int16_t throttle_control = abs(g.rc_3.control_in); // 0:DZ,DZ+1:1000 => 0:0,g.throttle_min:g.throttle_max
+    int16_t s = (g.rc_3.control_in == 0) ? 0 : sign(g.rc_3.control_in); // for reverse
+
     int16_t mid_stick = g.rc_3.trim_range;        // control value at mid stick (defined by trim)
     int16_t throttle_out;
 
     // ensure reasonable throttle values
     throttle_control = constrain(throttle_control,0,1000);
-    g.throttle_mid = constrain(g.throttle_mid,300,700);
+    g.throttle_mid = constrain(g.throttle_mid,250,700);
 
     // check throttle is above, below trim
     if (throttle_control < mid_stick) // below trim
@@ -932,7 +950,7 @@ static int16_t get_pilot_desired_throttle()
         throttle_out = g.throttle_mid + ((float)(throttle_control-mid_stick))*((float)(g.throttle_max-g.throttle_mid))/((float)(g.throttle_max-mid_stick));
     }
 
-    return throttle_out;
+    return throttle_out * s;
 }
 
 // get_pilot_desired_climb_rate - transform pilot's throttle input to
@@ -953,6 +971,7 @@ static int16_t get_pilot_desired_climb_rate()
     }
 
     // ensure a reasonable throttle value
+#warning "may want to make this -1000 to 1000 someday?"
     throttle_control = constrain(throttle_control,0,1000);
 
     // check throttle is above, below or in the deadband
@@ -992,6 +1011,7 @@ static int16_t get_pilot_desired_acceleration(int16_t throttle_control)
     }
 
     // ensure a reasonable throttle value
+#warning "may want to make this -1000 to 1000 someday?"
     throttle_control = constrain(throttle_control,0,1000);
 
     // check throttle is above, below or in the deadband
@@ -1019,7 +1039,7 @@ static int32_t get_pilot_desired_direct_alt(int16_t throttle_control)
     if( ap.failsafe ) {
         return 0;
     }
-
+#warning "may want to make this -1000 to 1000 someday?"
     // ensure a reasonable throttle value
     throttle_control = constrain(throttle_control,0,1000);
 
@@ -1079,7 +1099,10 @@ get_throttle_rate(int16_t z_target_speed)
         // set target for accel based throttle controller
         set_throttle_accel_target(output);
     }else{
-        set_throttle_out(g.throttle_cruise+output, true);
+        output = g.throttle_cruise+output;
+#warning "clip at zero to avoid throttle reversal for now. May want it someday though..."
+        if(output < 0) output = 0; 
+        set_throttle_out(output, true);
     }
 
     // update throttle cruise

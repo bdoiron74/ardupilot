@@ -66,6 +66,9 @@ void update_aux_servo_function( RC_Channel_aux* rc_a,
 		case RC_Channel_aux::k_flap_auto:
 		case RC_Channel_aux::k_flaperon:
 		case RC_Channel_aux::k_egg_drop:
+#if ESC3D == ENABLED
+#warning "set_range broken for esc3d
+#endif
 			_aux_channels[i]->set_range(0,100);
 			break;
 		case RC_Channel_aux::k_aileron:

@@ -7,19 +7,26 @@
 
 
 // called at 10hz
-static void arm_motors()
+static int16_t arm_motors()
 {
     static int16_t arming_counter;
 
-    // don't allow arming/disarming in anything but manual
-    if (g.rc_3.control_in > 0) {
+    if (g.rc_3.control_in != 0) {
         arming_counter = 0;
-        return;
+        return arming_counter;
     }
 
-    if ((control_mode > ACRO) && ((control_mode != TOY_A) && (control_mode != TOY_M))) {
+    // don't allow arming/disarming in anything but manual
+    if ((control_mode > ACRO) && (
+#ifdef TOY_A
+        (control_mode != TOY_A) && 
+#endif
+#ifdef TOY_M
+        (control_mode != TOY_M) && 
+#endif
+        (control_mode != SPORT))) {
         arming_counter = 0;
-        return;
+        return arming_counter;
     }
 	
 	#if FRAME_CONFIG == HELI_FRAME
@@ -49,6 +56,7 @@ static void arm_motors()
 // Experimental AP_Limits library - set constraints, limits, fences, minima, maxima on various parameters
 ////////////////////////////////////////////////////////////////////////////////
 #if AP_LIMITS == ENABLED
+          xx
             if (limits.enabled() && limits.required()) {
                 gcs_send_text_P(SEVERITY_LOW, PSTR("Limits - Running pre-arm checks"));
 
@@ -92,6 +100,8 @@ static void arm_motors()
     }else{
         arming_counter = 0;
     }
+
+    return arming_counter;
 }
 
 
@@ -215,7 +225,7 @@ set_servos_4()
 {
 #if FRAME_CONFIG == TRI_FRAME
     // To-Do: implement improved stability patch for tri so that we do not need to limit throttle input to motors
-    g.rc_3.servo_out = min(g.rc_3.servo_out, 800);
+    g.rc_3.servo_out = max(-800, min(g.rc_3.servo_out, 800));
 #endif
     motors.output();
 }

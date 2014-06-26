@@ -84,6 +84,11 @@ RC_Channel::set_range(int16_t low, int16_t high)
 
 void RC_Channel::calc_trim_range(void)
 {
+#if ESC3D == ENABLED
+
+  trim_range = (_high-_low)/2; // close enough...
+
+#else
   if (_reverse==-1)
   {
     trim_range = _low + ((long)(_high-_low) * (radio_max - radio_trim - _dead_zone))/(radio_max-radio_min-_dead_zone);
@@ -92,6 +97,7 @@ void RC_Channel::calc_trim_range(void)
   {
     trim_range = _low + ((long)(_high-_low) * (radio_trim - radio_min - _dead_zone))/(radio_max-radio_min-_dead_zone);
   }
+#endif
 }
 
 void
@@ -148,11 +154,7 @@ RC_Channel::set_pwm(int16_t pwm)
     radio_in = pwm;
 
     if(_type == RC_CHANNEL_TYPE_RANGE) {
-        control_in = pwm_to_range();
-        //control_in = constrain(control_in, _low, _high);
-        //control_in = min(control_in, _high);
-        control_in = (control_in < _dead_zone) ? 0 : control_in;
-
+        control_in = pwm_to_range(); // [3D: -max:-min,]0,+min:+max
     } else {
         //RC_CHANNEL_TYPE_ANGLE, RC_CHANNEL_TYPE_ANGLE_RAW
         control_in = pwm_to_angle();
@@ -178,10 +180,16 @@ RC_Channel::calc_pwm(void)
 {
     if(_type == RC_CHANNEL_TYPE_RANGE) {
         pwm_out         = range_to_pwm();
-        radio_out       = (_reverse >= 0) ? (radio_min + pwm_out) : (radio_max - pwm_out);
+#if ESC3D == ENABLED
+       radio_out       = radio_trim + pwm_out;
+#else
+       radio_out       = (_reverse >= 0) ? (radio_min + pwm_out) : (radio_max - pwm_out);
+#endif
 
     }else if(_type == RC_CHANNEL_TYPE_ANGLE_RAW) {
-        pwm_out         = (float)servo_out * .1;
+//        pwm_out         = (float)servo_out * .1; why floats for an int16??
+#warning "TODO: Why not use -4000:4000 and then >>3 ?"
+        pwm_out         = (float)servo_out / 10;
         radio_out       = (pwm_out * _reverse) + radio_trim;
 
     }else{     // RC_CHANNEL_TYPE_ANGLE
@@ -191,6 +199,22 @@ RC_Channel::calc_pwm(void)
 
     radio_out = constrain(radio_out, radio_min.get(), radio_max.get());
 }
+
+#if ESC3D == ENABLED
+int16_t
+RC_Channel::range_to_radio_out(int16_t range)
+{
+  int16_t ro = 0;
+
+  if((range * _reverse) > 0)
+      ro = _reverse * ((long)range * (long)(radio_max - radio_trim)) / (long)(_high_out - _low_out);
+  else
+      ro = _reverse * ((long)range * (long)(radio_trim - radio_min)) / (long)(_high_out - _low_out);
+
+  return constrain(ro+radio_trim, radio_min.get(), radio_max.get());
+}
+#endif
+
 
 // ------------------------------------------
 
@@ -282,6 +306,17 @@ RC_Channel::pwm_to_range()
 	    r_in = radio_max.get() - (r_in - radio_min.get());
     }
 
+#if ESC3D == ENABLED
+    int16_t radio_trim_pos  = radio_trim + _dead_zone;
+    int16_t radio_trim_neg  = radio_trim - _dead_zone;
+
+    if(r_in > radio_trim_pos)
+        return (_low + ((long)(_high - _low) * (long)(r_in - radio_trim_pos)) / (long)(radio_max - radio_trim_pos));
+    else if(r_in < radio_trim_neg)
+        return (-_low - ((long)(_high - _low) * (long)(radio_trim_neg - r_in)) / (long)(radio_trim_neg-radio_min));
+    else
+        return 0;
+#else
     int16_t radio_trim_low  = radio_min + _dead_zone;
 
     if(r_in > radio_trim_low)
@@ -290,13 +325,21 @@ RC_Channel::pwm_to_range()
         return 0;
     else
         return _low;
+#endif
 }
 
 
 int16_t
 RC_Channel::range_to_pwm()
 {
+#if ESC3D == ENABLED
+    if((servo_out * _reverse) > 0)
+        return _reverse * ((long)(servo_out) * (long)(radio_max - radio_trim)) / (long)(_high_out);
+    else
+        return _reverse * ((long)(servo_out) * (long)(radio_trim - radio_min)) / (long)(_high_out);
+#else
     return ((long)(servo_out - _low_out) * (long)(radio_max - radio_min)) / (long)(_high_out - _low_out);
+#endif
 }
 
 // ------------------------------------------
@@ -313,6 +356,7 @@ RC_Channel::norm_input()
 float
 RC_Channel::norm_output()
 {
+#warning "why doesn't this use trim?"
     int16_t mid = (radio_max + radio_min) / 2;
     float ret;
     if(radio_out < mid)

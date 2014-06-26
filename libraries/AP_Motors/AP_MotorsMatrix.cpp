@@ -83,55 +83,145 @@ void AP_MotorsMatrix::output_min()
     // fill the motor_out[] array for HIL use and send minimum value to each motor
     for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
         if( motor_enabled[i] ) {
+#if ESC3D == ENABLED
+            motor_out[i] = _rc_throttle->radio_trim;
+            _rc->OutputCh(_motor_to_channel_map[i], motor_out[i]);
+            _motor_v_estimate[i] = 0;
+#else
             motor_out[i] = _rc_throttle->radio_min;
             _rc->OutputCh(_motor_to_channel_map[i], motor_out[i]);
-
             _motor_v_estimate[i] = _rc_throttle->radio_min;
+#endif
         }
     }
 }
+
+extern FastSerial *cliSerial;
 
 // output_armed - sends commands to the motors
 void AP_MotorsMatrix::output_armed()
 {
     int8_t i;
-    int16_t out_min = _rc_throttle->radio_min;
+#if ESC3D == ENABLED
+    int16_t out_min = _min_throttle;
+    int16_t out_max = 1000; // rescale to radio_min:radio_trim:radio_max later
+#else
+    int16_t out_min = _rc_throttle->radio_min + _min_throttle;
     int16_t out_max = _rc_throttle->radio_max;
+#endif
     int16_t rc_yaw_constrained_pwm;
     int16_t rc_yaw_excess;
     int16_t upper_margin, lower_margin;
     int16_t motor_adjustment = 0;
     int16_t yaw_to_execute = 0;
+    int16_t servo_out = _rc_throttle->servo_out;
+
+#if ESC3D == ENABLED
+    int8_t r;
+#else
+    const int8_t r = 1;
+    const int8_t sb = 0;
+#endif
 
     // initialize reached_limit flag
     _reached_limit = AP_MOTOR_NO_LIMITS_REACHED;
+#if ESC3D == ENABLED
+    // Throttle is -1000 to 1000
+    r = dir(servo_out); // -1, 0, +1
+    _mssb = false;
+#define BRAKE_COUNT 15
 
+    switch(_mstate)
+    {
+      case S_STOPPED:
+        servo_out = 0;
+        _mssb = true;
+        if(r == 1) _mstate = S_FWD_START;
+        else if(r == -1) _mstate = S_REV_START;
+        _mstate_counter = 0;
+        break;
+
+      case S_FWD_START:
+        servo_out = _min_throttle + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
+        _mssb = true;
+        if(r == 1) { if (++_mstate_counter >= BRAKE_COUNT) { _mstate = S_FWD; } }
+        else { _mstate = S_BRK; }
+        break;
+
+      case S_REV_START:
+        servo_out = _min_throttle + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
+        _mssb = true;
+        if(r == -1) { if(++_mstate_counter >= BRAKE_COUNT) { _mstate = S_REV; } }
+        else { _mstate = S_BRK; }
+        break;
+
+      case S_FWD:
+        servo_out = constrain(abs(servo_out), _min_throttle, _max_throttle);
+        if(r != 1) { _mstate = S_BRK; }
+        break;
+
+      case S_REV:
+        servo_out = constrain(abs(servo_out), _min_throttle, _max_throttle);
+        if(r != -1) { _mstate = S_BRK; }
+        break;
+
+      case S_BRK:
+        servo_out = 0;
+        _mssb = true;
+        if(--_mstate_counter <= 0) _mstate = S_STOPPED;
+        break;
+
+      default:
+        servo_out = 0;
+        _mstate = S_BRK;
+        _mstate_counter = BRAKE_COUNT;
+        break;
+    }
+#else
     // Throttle is 0 to 1000 only
-    _rc_throttle->servo_out = constrain(_rc_throttle->servo_out, 0, _max_throttle);
+    servo_out = constrain(servo_out, 0, _max_throttle);
+todo: _mssb
+#endif
 
     // capture desired roll, pitch, yaw and throttle from receiver
+
+    // these three are constrained to servo_out=[-5000:5000], which turns into pwm_out = -500:500
     _rc_roll->calc_pwm();
     _rc_pitch->calc_pwm();
-    _rc_throttle->calc_pwm();
     _rc_yaw->calc_pwm();
 
+    if(_mssb) // don't add r/p/y when starting or braking
+    {
+      // if we have any roll, pitch or yaw input then it's breaching the limit
+      if( _rc_roll->pwm_out != 0 || _rc_pitch->pwm_out != 0 ) {
+          _reached_limit |= AP_MOTOR_ROLLPITCH_LIMIT;
+      }
+      if( _rc_yaw->pwm_out != 0 ) {
+          _reached_limit |= AP_MOTOR_YAW_LIMIT;
+      }
+      _rc_roll->pwm_out = 0;
+      _rc_pitch->pwm_out = 0;
+      _rc_yaw->pwm_out = 0;
+    }
+#if ESC3D == ENABLED
+#else
+    _rc_throttle->calc_pwm(); // fills in radio_out
+#endif
+
+
     // if we are not sending a throttle output, we cut the motors
-    if(_rc_throttle->servo_out == 0) {
+    if(servo_out == 0) {
         for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
             if( motor_enabled[i] ) {
+#if ESC3D == ENABLED
+                motor_out[i]    = _rc_throttle->radio_trim;
+                _motor_v_estimate[i] = 0;
+#else
                 motor_out[i]    = _rc_throttle->radio_min;
+#endif
             }
         }
-        // if we have any roll, pitch or yaw input then it's breaching the limit
-        if( _rc_roll->pwm_out != 0 || _rc_pitch->pwm_out != 0 ) {
-            _reached_limit |= AP_MOTOR_ROLLPITCH_LIMIT;
-        }
-        if( _rc_yaw->pwm_out != 0 ) {
-            _reached_limit |= AP_MOTOR_YAW_LIMIT;
-        }
     } else {    // non-zero throttle
-
-        out_min = _rc_throttle->radio_min + _min_throttle;
 
         // initialise rc_yaw_contrained_pwm that we will certainly output and rc_yaw_excess that we will do on best-efforts basis.
         // Note: these calculations and many others below depend upon _yaw_factors always being 0, -1 or 1.
@@ -160,10 +250,19 @@ void AP_MotorsMatrix::output_armed()
         // add roll, pitch, throttle and constrained yaw for each motor
         for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
             if( motor_enabled[i] ) {
+#if ESC3D == ENABLED
+                motor_out[i] = (servo_out * _throttle_factor[i]) +
+                               (r * (_rc_roll->pwm_out * _roll_factor[i] +
+                                     _rc_pitch->pwm_out * _pitch_factor[i] +
+                                     rc_yaw_constrained_pwm * _yaw_factor[i]));
+#else
+              x
+#error "Throttle Factor won't work like this... radio_out = 1000:2000"
                 motor_out[i] = _rc_throttle->radio_out * _throttle_factor[i] +
                                _rc_roll->pwm_out * _roll_factor[i] +
                                _rc_pitch->pwm_out * _pitch_factor[i] +
                                rc_yaw_constrained_pwm * _yaw_factor[i];
+#endif
 
                 // calculate remaining room between fastest running motor and top of pwm range
                 if( out_max - motor_out[i] < upper_margin) {
@@ -213,29 +312,29 @@ void AP_MotorsMatrix::output_armed()
 
             // loop through motors and reduce as necessary
             for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
-                if( motor_enabled[i] && _yaw_factor[i] != 0 ) {
+                if( motor_enabled[i] && (_yaw_factor[i]*r) != 0 ) {
 
                     // calculate upper and lower margins for this motor
                     upper_margin = max(0,out_max - motor_out[i]);
                     lower_margin = max(0,motor_out[i] - out_min);
 
                     // motor is increasing, check upper limit
-                    if( rc_yaw_excess > 0 && _yaw_factor[i] > 0 ) {
+                    if( rc_yaw_excess > 0 && (_yaw_factor[i]*r) > 0 ) {
                         yaw_to_execute = min(yaw_to_execute, upper_margin);
                     }
 
                     // motor is decreasing, check lower limit
-                    if( rc_yaw_excess > 0 && _yaw_factor[i] < 0 ) {
+                    if( rc_yaw_excess > 0 && (_yaw_factor[i]*r) < 0 ) {
                         yaw_to_execute = min(yaw_to_execute, lower_margin);
                     }
 
                     // motor is decreasing, check lower limit
-                    if( rc_yaw_excess < 0 && _yaw_factor[i] > 0 ) {
+                    if( rc_yaw_excess < 0 && (_yaw_factor[i]*r) > 0 ) {
                         yaw_to_execute = max(yaw_to_execute, -lower_margin);
                     }
 
                     // motor is increasing, check upper limit
-                    if( rc_yaw_excess < 0 && _yaw_factor[i] < 0 ) {
+                    if( rc_yaw_excess < 0 && (_yaw_factor[i]*r) < 0 ) {
                         yaw_to_execute = max(yaw_to_execute, -upper_margin);
                     }
                 }
@@ -245,7 +344,7 @@ void AP_MotorsMatrix::output_armed()
                 // add the additional yaw
                 for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
                     if( motor_enabled[i] ) {
-                        motor_out[i] += _yaw_factor[i] * yaw_to_execute;
+                        motor_out[i] += (_yaw_factor[i]*r) * yaw_to_execute;
                     }
                 }
             }
@@ -261,8 +360,11 @@ void AP_MotorsMatrix::output_armed()
         {
           static float factor = 1.0;
           
-          factor = (factor * (1.0-_voltage_tc)) + (sqrt(_voltage_target / battery_voltage)*_voltage_tc);
-          factor = constrain(factor, 0.85, 1.15);
+//#warning "this probably isn't doing the right thing at all since motor_out is offset 1000:2000"
+//          factor = (factor * (1.0-_voltage_tc)) + (sqrt(_voltage_target / battery_voltage)*_voltage_tc);
+
+          factor = (factor * (1.0-_voltage_tc)) + (_voltage_target / battery_voltage)*_voltage_tc;
+          factor = constrain(factor, 0.79, 1.15);
 
           for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) 
           {
@@ -296,7 +398,11 @@ void AP_MotorsMatrix::output_armed()
         // clip motor output if required (shouldn't be)
         for( i=0; i<AP_MOTORS_MAX_NUM_MOTORS; i++ ) {
             if( motor_enabled[i] ) {
+#if ESC3D == ENABLED
+                motor_out[i] = _rc_throttle->range_to_radio_out(motor_out[i]*r); // back to correct sign, then to radio offset/scale
+#else
                 motor_out[i] = constrain(motor_out[i], out_min, out_max);
+#endif
             }
         }
     }
@@ -312,12 +418,11 @@ void AP_MotorsMatrix::output_armed()
 // output_disarmed - sends commands to the motors
 void AP_MotorsMatrix::output_disarmed()
 {
-    if(_rc_throttle->control_in > 0) {
+    if(_rc_throttle->control_in != 0) {
         // we have pushed up the throttle
         // remove safety for auto pilot
         _auto_armed = true;
     }
-
     // Send minimum values to all motors
     output_min();
 }
@@ -343,16 +448,22 @@ void AP_MotorsMatrix::output_test()
 
     // first delay is longer
     delay(4000);
-
     // loop through all the possible orders spinning any motors that match that description
     for( i=min_order; i<=max_order; i++ ) {
         for( j=0; j<AP_MOTORS_MAX_NUM_MOTORS; j++ ) {
             if( motor_enabled[j] && test_order[j] == i ) {
                 // turn on this motor and wait 1/3rd of a second
+#if ESC3D == ENABLED
+                _rc->OutputCh(_motor_to_channel_map[j], _rc_throttle->radio_trim + 50);
+                delay(300);
+                _rc->OutputCh(_motor_to_channel_map[j], _rc_throttle->radio_trim);
+                delay(2000);
+#else
                 _rc->OutputCh(_motor_to_channel_map[j], _rc_throttle->radio_min + 100);
                 delay(300);
                 _rc->OutputCh(_motor_to_channel_map[j], _rc_throttle->radio_min);
                 delay(2000);
+#endif
             }
         }
     }

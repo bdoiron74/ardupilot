@@ -43,21 +43,34 @@ void AP_MotorsTri::enable()
 // output_min - sends minimum values out to the motors
 void AP_MotorsTri::output_min()
 {
+#if ESC3D == ENABLED
+    // fill the motor_out[] array for HIL use
+    motor_out[AP_MOTORS_MOT_1] = _rc_throttle->radio_trim;
+    motor_out[AP_MOTORS_MOT_2] = _rc_throttle->radio_trim;
+    motor_out[AP_MOTORS_MOT_4] = _rc_throttle->radio_trim;
+    // send minimum value to each motor
+    _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_1], _rc_throttle->radio_trim);
+    _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_2], _rc_throttle->radio_trim);
+    _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_4], _rc_throttle->radio_trim);
+#else
     // fill the motor_out[] array for HIL use
     motor_out[AP_MOTORS_MOT_1] = _rc_throttle->radio_min;
     motor_out[AP_MOTORS_MOT_2] = _rc_throttle->radio_min;
     motor_out[AP_MOTORS_MOT_4] = _rc_throttle->radio_min;
-
     // send minimum value to each motor
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_1], _rc_throttle->radio_min);
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_2], _rc_throttle->radio_min);
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_4], _rc_throttle->radio_min);
+#endif
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_CH_TRI_YAW], _rc_yaw->radio_trim);
 }
 
 // output_armed - sends commands to the motors
 void AP_MotorsTri::output_armed()
 {
+#if ESC3D == ENABLED
+#warning "Not implemented!" 
+#endif
     int16_t out_min = _rc_throttle->radio_min;
     int16_t out_max = _rc_throttle->radio_max;
 
@@ -142,12 +155,12 @@ void AP_MotorsTri::output_armed()
 // output_disarmed - sends commands to the motors
 void AP_MotorsTri::output_disarmed()
 {
-    if(_rc_throttle->control_in > 0) {
+    if(_rc_throttle->control_in != 0) {
         // we have pushed up the throttle
         // remove safety
         _auto_armed = true;
     }
-
+#warning "min or trim for 3d?"
     // fill the motor_out[] array for HIL use
     for (unsigned char i = AP_MOTORS_MOT_1; i < AP_MOTORS_MOT_4; i++) {
         motor_out[i] = _rc_throttle->radio_min;
@@ -162,7 +175,7 @@ void AP_MotorsTri::output_test()
 {
     // Send minimum values to all motors
     output_min();
-
+#warning "min or trim for 3d?"
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_2], _rc_throttle->radio_min);
     delay(4000);
     _rc->OutputCh(_motor_to_channel_map[AP_MOTORS_MOT_1], _rc_throttle->radio_min + 100);

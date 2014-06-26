@@ -138,8 +138,8 @@
 #define OF_LOITER 10                    // Hold a single location using optical flow
                                         // sensor
 #define SPORT 11                        // angle limited acro
-#define TOY_A 12                        // THOR Enum for Toy mode
-#define TOY_M 13                        // THOR Enum for Toy mode
+//#define TOY_A 12                        // THOR Enum for Toy mode
+//#define TOY_M 13                        // THOR Enum for Toy mode
 #define NUM_MODES 14
 
 // CH_6 Tuning

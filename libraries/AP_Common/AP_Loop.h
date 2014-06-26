@@ -21,14 +21,14 @@
 
 #include "AP_Vector.h"
 
-class Loop
+class AP_Loop
 {
 public:
-    Loop() : _fptr(), _data(), _period(), _subLoops(), _timeStamp(), _load(), _dt() {
+    AP_Loop() : _fptr(), _data(), _period(), _subLoops(), _timeStamp(), _load(), _dt() {
     };
-    Loop(float frequency, void (*fptr)(void *) = NULL, void * data = NULL);
+    AP_Loop(float frequency, void (*fptr)(void *) = NULL, void * data = NULL);
     void                    update();
-    Vector<Loop *> &        subLoops() {
+    Vector<AP_Loop *> &        subLoops() {
         return _subLoops;
     }
     float                   frequency() {
@@ -50,7 +50,7 @@ protected:
     void                    (*_fptr)(void *);
     void *                  _data;
     uint32_t                _period;
-    Vector<Loop *>          _subLoops;
+    Vector<AP_Loop *>          _subLoops;
     uint32_t                _timeStamp;
     uint8_t                 _load;
     float                   _dt;
