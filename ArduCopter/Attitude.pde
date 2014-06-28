@@ -169,7 +169,7 @@ get_yaw_rate_stabilized_ef()
 	  set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
-// use max stick deflection of roll, pitch or yaw to determine level mix
+// use max stick deflection of roll or pitch to determine level mix
 float CalcLevelMix()
 {
   float r = ((float)labs(g.rc_1.control_in)) / MAX_INPUT_ROLL_ANGLE;
@@ -231,10 +231,11 @@ get_acro_pitch()
     // when leveling (acro < max_level), maintain heading by splitting between pitch/yaw
     if(labs(pitch_rate) < (g.acro_p * 4500 * lf) ) 
     {
-      // combine/limit rate
-      pitch_rate = constrain((pitch_rate + level_rate), -limit, limit);
+      // combine/limit rate 
+      //- flip sign of pilot rate to keep pitch axis consistent. What about yaw???
+      pitch_rate = constrain(((pitch_rate*sign(cos_roll_x)) + level_rate), -limit, limit);
 
-      yaw_rate += pitch_rate * (-sin_roll);
+      yaw_rate += pitch_rate * (-sin_roll); // yaw first before modifing pitch
       pitch_rate *= cos_roll_x;
     }
     else
@@ -305,8 +306,8 @@ update_rate_contoller_targets()
       {
           // convert earth frame rates to body frame rates
           roll_rate_target_bf 	= roll_rate_target_ef - sin_pitch * yaw_rate_target_ef;
-          pitch_rate_target_bf 	= cos_roll_x  * pitch_rate_target_ef + sin_roll * cos_pitch_x * yaw_rate_target_ef;
-          yaw_rate_target_bf 		= cos_pitch_x * cos_roll_x * yaw_rate_target_ef - sin_roll * pitch_rate_target_ef;
+          pitch_rate_target_bf 	= (cos_roll_x * pitch_rate_target_ef) + (sin_roll * cos_pitch_x * yaw_rate_target_ef);
+          yaw_rate_target_bf 		= (cos_pitch_x * cos_roll_x * yaw_rate_target_ef) - (sin_roll * pitch_rate_target_ef);
       }
 
       // now do body frame trajectory control:

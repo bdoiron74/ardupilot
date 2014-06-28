@@ -129,7 +129,7 @@ void AP_MotorsMatrix::output_armed()
     // Throttle is -1000 to 1000
     r = dir(servo_out); // -1, 0, +1
     _mssb = false;
-#define BRAKE_COUNT 15
+#define BRAKE_COUNT 10
 
     switch(_mstate)
     {
@@ -142,14 +142,14 @@ void AP_MotorsMatrix::output_armed()
         break;
 
       case S_FWD_START:
-        servo_out = _min_throttle + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
+        servo_out = _min_throttle;// + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
         _mssb = true;
         if(r == 1) { if (++_mstate_counter >= BRAKE_COUNT) { _mstate = S_FWD; } }
         else { _mstate = S_BRK; }
         break;
 
       case S_REV_START:
-        servo_out = _min_throttle + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
+        servo_out = _min_throttle;// + (abs(servo_out) >> (BRAKE_COUNT-_mstate_counter));
         _mssb = true;
         if(r == -1) { if(++_mstate_counter >= BRAKE_COUNT) { _mstate = S_REV; } }
         else { _mstate = S_BRK; }
