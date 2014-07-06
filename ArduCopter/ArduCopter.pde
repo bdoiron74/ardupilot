@@ -1,6 +1,6 @@
 /// -*- tab-width: 4; Mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*-
 
-#define THISFIRMWARE "ArduCopter V2.9.1b-Bob3D 2014-Jun-28"
+#define THISFIRMWARE "ArduCopter3D 2014-Jul-06"
 /*
  *  ArduCopter Version 2.9
  *  Lead author:	Jason Short
@@ -657,7 +657,7 @@ static int8_t CH7_wp_index;
 // Battery Sensors
 ////////////////////////////////////////////////////////////////////////////////
 // Battery Voltage of battery, initialized above threshold for filter
-static float battery_voltage1 = LOW_VOLTAGE * 1.05;
+static float battery_voltage1 = 12.6; //LOW_VOLTAGE * 1.05;
 // refers to the instant amp draw – based on an Attopilot Current sensor
 static float current_amps1;
 // refers to the total amps drawn – based on an Attopilot Current sensor
@@ -2002,7 +2002,7 @@ static void update_trig(void){
   // update error from last iteration
   error_bf += ((Vector3f(roll_rate_bf, pitch_rate_bf, yaw_rate_bf) - (omega*DEGX100)) * dt);
 
-  // rotate the leftover r/p error back a sample
+  // rotate pitch&roll error and integrators with yaw movement
   if(1)
   {
     // copied from update_simple, 
@@ -2012,6 +2012,25 @@ static void update_trig(void){
     float ey = -(error_bf.x * zsiny - error_bf.y * zcosx);
     error_bf.x = ex;
     error_bf.y = ey;
+
+    // rotate pitch/roll rate integrators
+    float ix = g.pid_rate_roll.get_integrator();
+    float iy = g.pid_rate_pitch.get_integrator();
+    ex =   ix * zcosx + iy * zsiny;
+    ey = -(ix * zsiny - iy * zcosx);
+    g.pid_rate_roll.set_integrator(ex);
+    g.pid_rate_pitch.set_integrator(ey);
+
+    // rotate pitch/roll stab integrators
+    ix = g.pid_stabilize_roll.get_integrator();
+    iy = g.pid_stabilize_pitch.get_integrator();
+    ex =   ix * zcosx + iy * zsiny;
+    ey = -(ix * zsiny - iy * zcosx);
+    g.pid_stabilize_roll.set_integrator(ex);
+    g.pid_stabilize_pitch.set_integrator(ey);
+
+    // what about D terms?
+
   }
 
   // limit error
