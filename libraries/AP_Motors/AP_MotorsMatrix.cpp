@@ -358,11 +358,11 @@ todo: _mssb
         // it ~can~ if the target voltage is higher than the battery voltage, which could lead to instability, so don't do that. 
         if((battery_voltage > 5.0) && (_voltage_target > 5.0))
         {
-          static float factor = 1.0;
+          static float factor = 0.79;
           
-//#warning "this probably isn't doing the right thing at all since motor_out is offset 1000:2000"
-//          factor = (factor * (1.0-_voltage_tc)) + (sqrt(_voltage_target / battery_voltage)*_voltage_tc);
-
+#if ESC3D != ENABLED
+#error "this probably isn't doing the right thing at all since motor_out is offset 1000:2000"
+#endif
           factor = (factor * (1.0-_voltage_tc)) + (_voltage_target / battery_voltage)*_voltage_tc;
           factor = constrain(factor, 0.79, 1.15);
 

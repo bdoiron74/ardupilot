@@ -32,6 +32,10 @@ static void get_stabilize_roll(int32_t target_angle)
 {
     float remaining;
     int32_t max_rate;
+
+    // invert on throttle reversal. 
+    if(g.rc_3.servo_out < 0) { target_angle = wrap_180(target_angle + 18000); }
+
 #warning "TODO - Bypass to error gain when acc = 0"
 #warning "Think about reducing max rate (pull target a bit based on remaining distance to curve the decel side)"
 #warning "and get rid of the -roll_slew_rate_ef/100...)"
@@ -55,7 +59,7 @@ static void get_stabilize_pitch(int32_t target_angle)
   
     // error from here to target, adjusted for rate change delay
     // not sure if wrap_180 makes sense here on the pitch axis
-    remaining = fwrap_180cd((float)target_angle-target_ef.y) - pitch_slew_rate_ef/100.0; 
+    remaining = fwrap_180cd((float)(target_angle*sign(cos_roll_x))-target_ef.y) - pitch_slew_rate_ef/100.0; 
 
     // max rate for given distance
     max_rate = get_max_rate(remaining, g.stb_max_rate, g.stb_acc_pitch);
@@ -165,7 +169,8 @@ get_acro_yaw(int32_t target_rate)
 static void
 get_yaw_rate_stabilized_ef()
 {
-    yaw_slew_rate_ef = constrain(g.acro_p * g.rc_4.control_in, yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
+  yaw_slew_rate_ef = constrain(g.acro_p * (g.rc_4.control_in * sign(cos_roll_x)),
+                               yaw_slew_rate_ef - g.stb_acc_yaw, yaw_slew_rate_ef + g.stb_acc_yaw);        
 	  set_yaw_rate_target(yaw_slew_rate_ef, EARTH_FRAME);
 }
 
